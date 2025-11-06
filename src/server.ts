@@ -16,6 +16,9 @@ import productsRoutes from './routes/products.routes.js';
 
 const app = express();
 
+// Trust proxy (required for Railway, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(
@@ -38,8 +41,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting (disabled for debugging)
-// app.use('/api', apiLimiter);
+// Rate limiting
+app.use('/api', apiLimiter);
 
 // Health check
 app.get('/health', (req, res) => {
