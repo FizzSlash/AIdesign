@@ -178,49 +178,10 @@ export async function scrapeProductCollections(websiteUrl: string) {
  * Enhanced brand analysis that auto-categorizes by product type
  */
 export async function analyzeWebsiteWithProductDetection(userId: string, websiteUrl: string) {
-  // 1. Scrape collections
-  const collections = await scrapeProductCollections(websiteUrl);
+  // Scraping disabled for Vercel - use Shopify/Klaviyo APIs instead
+  logger.warn('Website scraping disabled - use product APIs', { userId, websiteUrl });
   
-  // 2. For each collection, save images and categorize
-  for (const [collectionName, data] of Object.entries(collections)) {
-    const collectionData = data as any;
-    
-    for (const product of collectionData.products) {
-      try {
-        // Download and save image
-        const response = await fetch(product.src);
-        const buffer = Buffer.from(await response.arrayBuffer());
-        
-        // Save to database with category
-        await query(
-          `INSERT INTO brand_assets (
-            user_id, asset_type, category, subcategory, original_url, 
-            cdn_url, filename, alt_text, upload_source
-          ) VALUES ($1, 'product', $2, $3, $4, $5, $6, $7, 'auto_scraper')`,
-          [
-            userId,
-            collectionData.category,
-            collectionName,
-            product.src,
-            product.src, // TODO: Upload to CDN
-            `${collectionName}_${Date.now()}.jpg`,
-            product.alt
-          ]
-        );
-        
-      } catch (error) {
-        logger.warn('Failed to save product image', { error });
-      }
-    }
-  }
-  
-  // 3. Use AI to analyze and categorize
-  await categorizeAllAssets(userId);
-  
-  return {
-    collectionsFound: Object.keys(collections).length,
-    productsScraped: Object.values(collections).reduce((sum, c: any) => sum + c.products.length, 0)
-  };
+  throw new Error('Website scraping temporarily disabled. Use Shopify/Klaviyo product catalog APIs instead.');
 }
 
 // Helper functions
