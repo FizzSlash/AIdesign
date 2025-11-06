@@ -38,8 +38,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting
-app.use('/api', apiLimiter);
+// Rate limiting (disabled for debugging)
+// app.use('/api', apiLimiter);
 
 // Health check
 app.get('/health', (req, res) => {
