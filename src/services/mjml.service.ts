@@ -1,4 +1,4 @@
-import mjml from 'mjml';
+import mjml2html from 'mjml';
 import { logger } from '../utils/logger.js';
 
 interface AssembleMJMLParams {
@@ -221,7 +221,7 @@ function generateProductGridMJML(products: any[], images: any[], colorPalette: a
  */
 export async function renderMJMLToHTML(mjmlContent: string): Promise<string> {
   try {
-    const result = mjml(mjmlContent, {
+    const result = mjml2html(mjmlContent, {
       validationLevel: 'soft',
       minify: false,
     });

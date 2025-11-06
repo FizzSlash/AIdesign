@@ -1,7 +1,7 @@
 import { query } from '../db/index.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { logger } from '../utils/logger.js';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer'; // Removed for Vercel compatibility
 import sharp from 'sharp';
 import * as aiService from './ai.service.js';
 import config from '../config/index.js';
@@ -97,41 +97,19 @@ async function processBrandAnalysisJob(jobId: string, userId: string, websiteUrl
 }
 
 async function scrapeWebsite(url: string) {
-  const browser = await puppeteer.launch({ headless: 'new' });
-  const page = await browser.newPage();
-
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-
-  const data = await page.evaluate(() => {
-    return {
-      html: document.documentElement.outerHTML,
-      text: document.body.innerText,
-      images: Array.from(document.images)
-        .filter((img) => img.naturalWidth > 200 && img.naturalHeight > 200)
-        .map((img) => ({
-          src: img.src,
-          alt: img.alt || '',
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-        }))
-        .slice(0, 20),
-      styles: Array.from(document.styleSheets)
-        .map((sheet) => {
-          try {
-            return Array.from(sheet.cssRules)
-              .map((rule) => rule.cssText)
-              .join('\n');
-          } catch (e) {
-            return '';
-          }
-        })
-        .join('\n'),
-    };
-  });
-
-  await browser.close();
-
-  return data;
+  // Puppeteer removed for Vercel compatibility
+  // For V1, users will upload brand assets manually
+  // TODO: Implement with external scraping service or Vercel Edge function
+  
+  throw new Error('Website scraping temporarily disabled. Please upload brand assets manually.');
+  
+  // Placeholder return for TypeScript
+  return {
+    html: '',
+    text: '',
+    images: [],
+    styles: ''
+  };
 }
 
 function extractColorPalette(styles: string) {

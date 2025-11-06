@@ -1,7 +1,7 @@
 import { query } from '../db/index.js';
 import { logger } from '../utils/logger.js';
 import * as aiService from './ai.service.js';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer'; // Removed for Vercel compatibility
 
 /**
  * Smart product discovery using AI vision
@@ -167,6 +167,10 @@ export async function findMatchingProducts(
  * Scrape website and auto-detect product categories
  */
 export async function scrapeProductCollections(websiteUrl: string) {
+  // Puppeteer removed for Vercel compatibility
+  throw new Error('Website scraping temporarily disabled. Use Shopify/Klaviyo product APIs instead.');
+  
+  /* Commented out for Vercel
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
   
@@ -220,6 +224,9 @@ export async function scrapeProductCollections(websiteUrl: string) {
     
     await browser.close();
     return productsByCollection;
+  */
+  
+  return {};
     
   } catch (error) {
     await browser.close();
