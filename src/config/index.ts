@@ -11,7 +11,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   DB_POOL_SIZE: z.string().transform(Number).default('20'),
   
-  REDIS_URL: z.string().url(),
+  REDIS_URL: z.string().url().optional(),
   
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
