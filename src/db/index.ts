@@ -8,7 +8,10 @@ export const pool = new Pool({
   connectionString: config.DATABASE_URL,
   max: config.DB_POOL_SIZE,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Test connection
