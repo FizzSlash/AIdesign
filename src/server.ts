@@ -13,6 +13,7 @@ import brandRoutes from './routes/brand.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import productsRoutes from './routes/products.routes.js';
+import shopifyRoutes from './routes/shopify.routes.js';
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use('/api/v1/brand', brandRoutes);
 app.use('/api/v1/emails', emailRoutes);
 app.use('/api/v1/templates', templateRoutes);
 app.use('/api/v1/products', productsRoutes);
+app.use('/api/v1/shopify', shopifyRoutes);
 
 // Error handling
 app.use(notFoundHandler);
