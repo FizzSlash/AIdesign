@@ -168,71 +168,10 @@ export async function findMatchingProducts(
  */
 export async function scrapeProductCollections(websiteUrl: string) {
   // Puppeteer removed for Vercel compatibility
+  // Use Shopify/Klaviyo product APIs instead
+  logger.warn('Website scraping disabled - use product APIs', { websiteUrl });
+  
   throw new Error('Website scraping temporarily disabled. Use Shopify/Klaviyo product APIs instead.');
-  
-  /* Commented out for Vercel
-  const browser = await puppeteer.launch({ headless: 'new' });
-  const page = await browser.newPage();
-  
-  logger.info('Scraping product collections', { websiteUrl });
-  
-  try {
-    await page.goto(websiteUrl, { waitUntil: 'networkidle0', timeout: 30000 });
-    
-    // Find collection/category links
-    const collections = await page.evaluate(() => {
-      const links = Array.from(document.querySelectorAll('a[href*="collection"], a[href*="category"], a[href*="shop"]'));
-      
-      return links.map(link => ({
-        name: link.textContent?.trim() || '',
-        url: (link as HTMLAnchorElement).href,
-        category: extractCategoryFromUrl((link as HTMLAnchorElement).href)
-      })).filter(c => c.name && c.url);
-    });
-    
-    logger.info(`Found ${collections.length} collections`);
-    
-    // Visit each collection and get product images
-    const productsByCollection: any = {};
-    
-    for (const collection of collections.slice(0, 5)) { // Limit to 5 collections
-      try {
-        await page.goto(collection.url, { waitUntil: 'networkidle0', timeout: 30000 });
-        
-        const products = await page.evaluate(() => {
-          const images = Array.from(document.querySelectorAll('img[src*="product"], img[alt*="product"]'));
-          
-          return images.map((img: any) => ({
-            src: img.src,
-            alt: img.alt || '',
-            name: img.alt || img.title || ''
-          })).filter(p => p.src && p.src.startsWith('http'));
-        });
-        
-        productsByCollection[collection.name] = {
-          category: collection.category,
-          url: collection.url,
-          products: products.slice(0, 10) // Limit to 10 products per collection
-        };
-        
-        logger.info(`Scraped collection: ${collection.name}`, { productCount: products.length });
-        
-      } catch (error) {
-        logger.warn(`Failed to scrape collection: ${collection.name}`, { error });
-      }
-    }
-    
-    await browser.close();
-    return productsByCollection;
-  */
-  
-  return {};
-    
-  } catch (error) {
-    await browser.close();
-    logger.error('Failed to scrape collections', { error });
-    throw error;
-  }
 }
 
 /**
