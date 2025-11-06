@@ -46,6 +46,21 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
+// Debug: Test if routes are loading
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API routes are loading!',
+    routesLoaded: {
+      auth: !!authRoutes,
+      klaviyo: !!klaviyoRoutes,
+      brand: !!brandRoutes,
+      email: !!emailRoutes,
+      templates: !!templateRoutes,
+      products: !!productsRoutes
+    }
+  });
+});
+
 // API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/klaviyo', klaviyoRoutes);
