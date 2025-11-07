@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Loader2, CheckCircle, XCircle, Wand2, X } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle, XCircle, Wand2, Package } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
