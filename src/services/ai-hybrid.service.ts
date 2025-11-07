@@ -24,7 +24,7 @@ export async function generateCopy(prompt: string, options: any = {}) {
     
     try {
       const response = await claude!.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: options.maxTokens || 1024,
         temperature: options.temperature || 0.7,
         messages: [{
@@ -66,7 +66,7 @@ export async function generateJSON(prompt: string, options: any = {}) {
     
     try {
       const response = await claude!.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: options.maxTokens || 2048,
         temperature: options.temperature || 0.3,
         messages: [{

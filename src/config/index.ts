@@ -21,7 +21,7 @@ const envSchema = z.object({
   
   OPENAI_API_KEY: z.string().startsWith('sk-'),
   ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-').optional(),
-  DEFAULT_AI_MODEL: z.string().default('claude-sonnet-4-5'),
+  DEFAULT_AI_MODEL: z.string().default('claude-sonnet-4-20250514'),
   USE_CLAUDE_FOR_COPY: z.string().transform(val => val === 'true').default('true'),
   DEFAULT_AI_TEMPERATURE: z.string().transform(Number).default('0.7'),
   
