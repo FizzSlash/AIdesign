@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl;
+  }
+  
+  .glass-hover {
+    @apply transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.2)];
+  }
+  
+  .glass-button {
+    @apply backdrop-blur-xl bg-gradient-to-r from-purple-500/80 to-blue-500/80 border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  }
+  
+  .glass-input {
+    @apply backdrop-blur-xl bg-white/5 border border-white/20 focus:border-white/40 focus:bg-white/10 transition-all duration-300;
+  }
+}
+
