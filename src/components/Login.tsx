@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Sparkles } from 'lucide-react';
+import { Mail, Lock, Sparkles, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = 'https://aidesign-production.up.railway.app/api/v1';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Mail, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
 
