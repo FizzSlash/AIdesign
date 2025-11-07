@@ -24,7 +24,13 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: config.FRONTEND_URL,
+    origin: [
+      config.FRONTEND_URL,
+      'https://a-idesign.vercel.app',
+      'https://ai-email-designer-ui.vercel.app',
+      /https:\/\/ai-email-designer-.+\.vercel\.app$/,
+      /https:\/\/a-idesign-.+\.vercel\.app$/
+    ],
     credentials: true,
   })
 );
