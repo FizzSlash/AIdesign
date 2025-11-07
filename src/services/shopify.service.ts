@@ -284,8 +284,7 @@ export async function syncCatalog(userId: string) {
             subcategory = $3,
             alt_text = $7,
             ai_description = $9,
-            tags = $10,
-            updated_at = NOW()`,
+            tags = $10`,
           [
             userId,
             product.productType || 'product',
