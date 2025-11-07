@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Mail, Palette, ShoppingBag, LogOut, Zap } from 'lucide-react';
-import EmailGenerator from './EmailGenerator';
+import EmailGenerator from './EmailGeneratorEnhanced';
 import BrandSetup from './BrandSetup';
 import ShopifyConnect from './ShopifyConnect';
 
