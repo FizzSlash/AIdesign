@@ -89,7 +89,7 @@ const PORT = config.PORT;
 
 app.listen(PORT, () => {
   logger.info(`🚀 Server running on http://localhost:${PORT}`);
-  logger.info(`📧 AI Email Designer API v1`);
+  logger.info(`📧 AI Email Designer API v1.1`);
   logger.info(`🌍 Environment: ${config.NODE_ENV}`);
 });
 
