@@ -274,17 +274,21 @@ export async function syncCatalog(userId: string) {
     for (const product of products) {
       // Store each product image
       for (const image of product.images) {
+        // Check if image already exists
+        const existing = await query(
+          `SELECT id FROM brand_assets WHERE user_id = $1 AND original_url = $2`,
+          [userId, image.src]
+        );
+        
+        if (existing.rows.length > 0) {
+          continue; // Skip if already exists
+        }
+        
         await query(
           `INSERT INTO brand_assets (
             user_id, asset_type, category, subcategory, original_url, cdn_url,
             filename, alt_text, dimensions, upload_source, ai_description, tags
-          ) VALUES ($1, 'product', $2, $3, $4, $5, $6, $7, $8, 'shopify', $9, $10)
-          ON CONFLICT (user_id, original_url) DO UPDATE SET
-            category = $2,
-            subcategory = $3,
-            alt_text = $7,
-            ai_description = $9,
-            tags = $10`,
+          ) VALUES ($1, 'product', $2, $3, $4, $5, $6, $7, $8, 'shopify', $9, $10)`,
           [
             userId,
             product.productType || 'product',
