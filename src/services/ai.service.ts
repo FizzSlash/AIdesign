@@ -71,7 +71,7 @@ Return ONLY a JSON object (no markdown, no extra text) with these exact fields:
 
   try {
     const response = await openai.chat.completions.create({
-      model: config.DEFAULT_AI_MODEL,
+      model: 'gpt-4-turbo',
       messages: [
         {
           role: 'system',
@@ -133,7 +133,7 @@ Return ONLY valid JSON with these exact fields:
 
   try {
     const response = await openai.chat.completions.create({
-      model: config.DEFAULT_AI_MODEL,
+      model: 'gpt-4-turbo',
       messages: [
         {
           role: 'system',
@@ -188,7 +188,7 @@ Return ONLY valid JSON:
 
   try {
     const response = await openai.chat.completions.create({
-      model: config.DEFAULT_AI_MODEL,
+      model: 'gpt-4-turbo',
       messages: [
         {
           role: 'system',
@@ -234,7 +234,7 @@ Return ONLY the copy text, no JSON, no formatting.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: config.DEFAULT_AI_MODEL,
+      model: 'gpt-4-turbo',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
       max_tokens: 300,
