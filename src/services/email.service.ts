@@ -161,53 +161,29 @@ async function updateJobProgress(jobId: string, progress: number, step: string) 
 async function selectImages(userId: string, intent: any) {
   const { keyProducts } = intent;
   
-  // Smart search: Find images matching the campaign products
-  const result = await query(
-    `SELECT id, cdn_url, alt_text, dimensions, ai_description, category, tags
-     FROM brand_assets
-     WHERE user_id = $1 
-       AND is_active = true
-       AND (
-         -- Match by category
-         category ILIKE ANY($2::text[])
-         OR subcategory ILIKE ANY($2::text[])
-         -- Match by description
-         OR ai_description ILIKE ANY($3::text[])
-         -- Match by tags
-         OR tags && $2::text[]
-       )
-     ORDER BY uploaded_at DESC
-     LIMIT 20`,
-    [
-      userId,
-      keyProducts, // e.g., ['dresses', 'summer']
-      keyProducts.map((p: string) => `%${p}%`) // for ILIKE search
-    ]
-  );
-
-  // If we found matching products, use them
-  if (result.rows.length >= 6) {
-    logger.info('Found matching products for campaign', { 
-      count: result.rows.length, 
-      products: keyProducts 
-    });
-    return result.rows.slice(0, 6);
-  }
+  logger.info('Selecting images for campaign', { keyProducts, userId });
   
-  // Fallback: Get any product images
-  const fallback = await query(
-    `SELECT id, cdn_url, alt_text, dimensions, ai_description
+  // For V1: Get ALL available product images
+  // TODO: Add smart matching based on keyProducts
+  const result = await query(
+    `SELECT id, cdn_url, alt_text, dimensions, ai_description, category, tags, original_url
      FROM brand_assets
      WHERE user_id = $1 
-       AND asset_type IN ('product', 'lifestyle', 'banner')
        AND is_active = true
+       AND cdn_url IS NOT NULL
+       AND cdn_url != ''
      ORDER BY uploaded_at DESC
      LIMIT 10`,
     [userId]
   );
   
-  logger.warn('Using fallback images - no specific matches found', { keyProducts });
-  return fallback.rows.slice(0, 6);
+  if (result.rows.length > 0) {
+    logger.info(`Found ${result.rows.length} images for email`, { userId });
+    return result.rows.slice(0, 6);
+  }
+  
+  logger.warn('No images found in database', { userId });
+  return [];
 }
 
 export async function getGenerationStatus(userId: string, jobId: string) {

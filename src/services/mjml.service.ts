@@ -61,12 +61,20 @@ export async function assembleMJML(params: AssembleMJMLParams): Promise<string> 
       <mj-column>
         ${images[0] ? `
         <mj-image 
-          src="${images[0].cdn_url}" 
+          src="${images[0].cdn_url || images[0].original_url}" 
           alt="${heroSection.headline}"
           width="600px"
           padding="0"
         />
-        ` : ''}
+        ` : `
+        <mj-section background-color="${colorPalette.primary || '#6366F1'}" padding="60px 20px">
+          <mj-column>
+            <mj-text align="center" font-size="48px" font-weight="bold" color="#FFFFFF">
+              ${heroSection.headline}
+            </mj-text>
+          </mj-column>
+        </mj-section>
+        `}
         
         <mj-text 
           align="center" 
