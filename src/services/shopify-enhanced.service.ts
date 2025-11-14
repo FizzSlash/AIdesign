@@ -157,7 +157,6 @@ export async function syncCatalogEnhanced(userId: string) {
       userId, 
       productsStored, 
       collectionsStored,
-      collectionsMatched,
       totalImages,
       totalVariants
     });
@@ -165,7 +164,6 @@ export async function syncCatalogEnhanced(userId: string) {
     return {
       productsSync: productsStored,
       collectionsFound: collectionsStored,
-      collectionsMatched,
       imagesStored: totalImages,
       variantsStored: totalVariants,
       totalInventory: products.reduce((sum, p) => 
