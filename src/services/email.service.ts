@@ -161,28 +161,50 @@ async function updateJobProgress(jobId: string, progress: number, step: string) 
 async function selectImages(userId: string, intent: any) {
   const { keyProducts } = intent;
   
-  logger.info('Selecting images for campaign', { keyProducts, userId });
+  logger.info('Selecting products for campaign', { keyProducts, userId });
   
-  // For V1: Get ALL available product images
-  // TODO: Add smart matching based on keyProducts
+  // Query new products table
   const result = await query(
-    `SELECT id, cdn_url, alt_text, dimensions, ai_description, category, tags, original_url
-     FROM brand_assets
+    `SELECT 
+      shopify_product_id as id,
+      title,
+      images,
+      price,
+      compare_at_price,
+      total_inventory,
+      product_type,
+      handle,
+      product_url
+     FROM shopify_products
      WHERE user_id = $1 
-       AND is_active = true
-       AND cdn_url IS NOT NULL
-       AND cdn_url != ''
-     ORDER BY uploaded_at DESC
+       AND in_stock = true
+       AND images != '[]'::jsonb
+     ORDER BY total_inventory DESC, created_at DESC
      LIMIT 10`,
     [userId]
   );
   
   if (result.rows.length > 0) {
-    logger.info(`Found ${result.rows.length} images for email`, { userId });
-    return result.rows.slice(0, 6);
+    logger.info(`Found ${result.rows.length} products for email`, { userId });
+    
+    // Transform to format expected by MJML
+    return result.rows.slice(0, 6).map(product => {
+      const images = JSON.parse(product.images || '[]');
+      return {
+        id: product.id,
+        cdn_url: images[0]?.src || '',
+        original_url: images[0]?.src || '',
+        alt_text: product.title,
+        title: product.title,
+        price: product.price,
+        compareAtPrice: product.compare_at_price,
+        url: product.product_url,
+        allImages: images,  // ALL images available
+      };
+    });
   }
   
-  logger.warn('No images found in database', { userId });
+  logger.warn('No products found in database', { userId });
   return [];
 }
 

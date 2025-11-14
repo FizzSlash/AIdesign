@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import * as shopifyService from '../services/shopify.service.js';
+import * as shopifyEnhanced from '../services/shopify-enhanced.service.js';
 
 const router = Router();
 
@@ -74,14 +75,43 @@ router.get('/products/search', async (req: AuthRequest, res, next) => {
   }
 });
 
-// POST /api/v1/shopify/sync
+// POST /api/v1/shopify/sync - Enhanced sync with full data
 router.post('/sync', async (req: AuthRequest, res, next) => {
   try {
-    const result = await shopifyService.syncCatalog(req.user!.id);
+    const result = await shopifyEnhanced.syncCatalogEnhanced(req.user!.id);
     res.json({
       message: 'Shopify catalog synced successfully',
       ...result,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/v1/shopify/collections
+router.get('/collections', async (req: AuthRequest, res, next) => {
+  try {
+    const collections = await shopifyEnhanced.getCollections(req.user!.id);
+    res.json({ collections });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/v1/shopify/products-enhanced - With filters
+router.get('/products-enhanced', async (req: AuthRequest, res, next) => {
+  try {
+    const { collectionId, minInventory, inStockOnly, productType, search } = req.query;
+    
+    const products = await shopifyEnhanced.getProducts(req.user!.id, {
+      collectionId: collectionId as string,
+      minInventory: minInventory ? parseInt(minInventory as string) : undefined,
+      inStockOnly: inStockOnly === 'true',
+      productType: productType as string,
+      search: search as string,
+    });
+    
+    res.json({ products, count: products.length });
   } catch (error) {
     next(error);
   }
