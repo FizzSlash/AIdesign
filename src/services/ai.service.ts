@@ -161,51 +161,78 @@ export async function generateProductGrid(
   brandProfile: any,
   products: any[] = []
 ): Promise<ProductGridContent> {
-  const prompt = `Generate product descriptions for an email product grid.
+  // Use actual product data if provided
+  if (products.length > 0) {
+    const prompt = `You are an expert email copywriter. Enhance these product descriptions for an email campaign.
 
 Brand Voice: ${brandProfile.brand_voice || 'professional'}
 Campaign Type: ${intent.campaignType}
-Key Products: ${intent.keyProducts.join(', ')}
 
-${products.length > 0 ? `Available Products:\n${JSON.stringify(products.slice(0, 6), null, 2)}` : ''}
+ACTUAL PRODUCTS from the store:
+${products.map((p, i) => `
+${i + 1}. ${p.title || p.name}
+   Price: $${p.price}
+   Current description: ${p.description || 'No description'}
+`).join('\n')}
 
-Generate descriptions for 4-6 products. Each should have:
-- Compelling product name (if not provided)
-- Brief description (15-25 words)
-- CTA text
+For each product above, write:
+- A compelling 15-25 word description that highlights benefits
+- An action-oriented CTA (2-4 words)
+- Keep the EXACT product name
 
 Return ONLY valid JSON:
 {
   "products": [
     {
-      "name": "Product Name",
-      "description": "Brief compelling description",
-      "price": "optional price",
+      "name": "EXACT product name from above",
+      "description": "Benefit-focused description",
       "ctaText": "Shop Now"
     }
   ]
 }`;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a JSON-only response bot. Always respond with valid JSON and nothing else.',
-        },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.7,
-      response_format: { type: 'json_object' },
-    });
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a JSON-only response bot. Always respond with valid JSON and nothing else.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+      });
 
-    const content = response.choices[0].message.content || '{}';
-    return JSON.parse(content) as ProductGridContent;
-  } catch (error) {
-    logger.error('Product grid generation failed', { error });
-    throw error;
+      const content = response.choices[0].message.content || '{}';
+      const generated = JSON.parse(content) as ProductGridContent;
+      
+      // Merge AI descriptions with actual product data
+      return {
+        products: products.slice(0, 6).map((product, i) => ({
+          name: product.title || product.name,
+          description: generated.products[i]?.description || product.description || '',
+          price: product.price ? `$${product.price}` : undefined,
+          ctaText: generated.products[i]?.ctaText || 'Shop Now'
+        }))
+      };
+    } catch (error) {
+      logger.error('Product grid generation failed', { error });
+      // Fallback to using products as-is
+      return {
+        products: products.slice(0, 6).map(p => ({
+          name: p.title || p.name,
+          description: p.description || '',
+          price: p.price ? `$${p.price}` : undefined,
+          ctaText: 'Shop Now'
+        }))
+      };
+    }
   }
+  
+  // Fallback if no products provided
+  return { products: [] };
 }
 
 /**

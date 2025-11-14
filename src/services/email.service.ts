@@ -61,12 +61,19 @@ async function processEmailGenerationJob(jobId: string, userId: string, data: Ge
 
     await updateJobProgress(jobId, 40, 'Generating content sections');
 
-    // 3. Generate content sections in parallel
+    // 3. Select products first
+    await updateJobProgress(jobId, 50, 'Finding products');
+    const selectedProducts = await selectImages(userId, intent);
+    
+    logger.info(`Selected ${selectedProducts.length} products for email`);
+    
+    // 4. Generate content sections with actual product data
+    await updateJobProgress(jobId, 60, 'Generating copy');
     const [heroSection, productGrid] = await Promise.all([
       aiService.generateHeroSection(intent, brandProfile),
-      aiService.generateProductGrid(intent, brandProfile, data.targetProducts || []),
+      aiService.generateProductGrid(intent, brandProfile, selectedProducts),
     ]);
-    totalTokens += 1000;
+    totalTokens += 1500;
 
     await updateJobProgress(jobId, 60, 'Selecting images');
 
