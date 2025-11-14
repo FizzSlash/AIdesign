@@ -142,6 +142,7 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
             `${API_URL}/emails/${response.data.emailId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
+          console.log('Generated email data:', emailResponse.data);
           setGeneratedEmail(emailResponse.data);
         } else if (response.data.status === 'failed') {
           clearInterval(interval);
