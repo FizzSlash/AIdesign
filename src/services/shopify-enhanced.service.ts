@@ -223,6 +223,8 @@ export async function getProducts(
     search?: string;
   }
 ) {
+  logger.info('getProducts called', { userId, filters });
+  
   const conditions = ['user_id = $1'];
   const params: any[] = [userId];
   let paramIndex = 2;
@@ -260,7 +262,7 @@ export async function getProducts(
     paramIndex++;
   }
   
-  const result = await query(`
+  const sql = `
     SELECT 
       shopify_product_id as id,
       title,
@@ -278,7 +280,13 @@ export async function getProducts(
     WHERE ${conditions.join(' AND ')}
     ORDER BY total_inventory DESC, created_at DESC
     LIMIT 50
-  `, params);
+  `;
+  
+  logger.info('Executing query', { sql, params });
+  
+  const result = await query(sql, params);
+  
+  logger.info(`Query returned ${result.rows.length} products`);
   
   // Transform to format expected by UI
   return result.rows.map(row => {
