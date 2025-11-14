@@ -261,18 +261,65 @@ export async function getProducts(
   }
   
   const result = await query(`
-    SELECT * FROM shopify_products
+    SELECT 
+      shopify_product_id as id,
+      title,
+      description,
+      product_type,
+      price,
+      compare_at_price,
+      images,
+      variants,
+      total_inventory,
+      in_stock,
+      collections,
+      product_url as url
+    FROM shopify_products
     WHERE ${conditions.join(' AND ')}
     ORDER BY total_inventory DESC, created_at DESC
     LIMIT 50
   `, params);
   
-  return result.rows.map(row => ({
-    ...row,
-    images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images,
-    variants: typeof row.variants === 'string' ? JSON.parse(row.variants) : row.variants,
-    collections: typeof row.collections === 'string' ? JSON.parse(row.collections) : row.collections
-  }));
+  // Transform to format expected by UI
+  return result.rows.map(row => {
+    let images = [];
+    let variants = [];
+    let collectionData = [];
+    
+    // Parse JSONB fields safely
+    try {
+      images = typeof row.images === 'string' ? JSON.parse(row.images) : (row.images || []);
+    } catch (e) {
+      images = [];
+    }
+    
+    try {
+      variants = typeof row.variants === 'string' ? JSON.parse(row.variants) : (row.variants || []);
+    } catch (e) {
+      variants = [];
+    }
+    
+    try {
+      collectionData = typeof row.collections === 'string' ? JSON.parse(row.collections) : (row.collections || []);
+    } catch (e) {
+      collectionData = [];
+    }
+    
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      product_type: row.product_type,
+      price: row.price?.toString() || '0',
+      compare_at_price: row.compare_at_price?.toString(),
+      images: images,
+      variants: variants,
+      total_inventory: row.total_inventory,
+      in_stock: row.in_stock,
+      collections: collectionData,
+      url: row.url
+    };
+  });
 }
 
 /**
