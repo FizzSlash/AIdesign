@@ -502,30 +502,68 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
                 <div className="space-y-2 mb-6">
                   <div className="glass rounded-lg p-3 bg-white/5">
                     <p className="text-white/50 text-xs mb-1">Subject Line</p>
-                    <p className="text-white font-medium">{generatedEmail.subject_line}</p>
+                    <p className="text-white font-medium">
+                      {generatedEmail?.subject_line || generatedEmail?.email?.subject_line || 'No subject'}
+                    </p>
                   </div>
-                  {generatedEmail.preview_text && (
+                  {(generatedEmail?.preview_text || generatedEmail?.email?.preview_text) && (
                     <div className="glass rounded-lg p-3 bg-white/5">
                       <p className="text-white/50 text-xs mb-1">Preview Text</p>
-                      <p className="text-white/80 text-sm">{generatedEmail.preview_text}</p>
+                      <p className="text-white/80 text-sm">
+                        {generatedEmail?.preview_text || generatedEmail?.email?.preview_text}
+                      </p>
                     </div>
                   )}
+                  
+                  <div className="glass rounded-lg p-3 bg-white/5">
+                    <p className="text-white/50 text-xs mb-1">Details</p>
+                    <div className="text-white/60 text-xs space-y-1">
+                      <p>Model: {generatedEmail?.model_used}</p>
+                      <p>Products: {generatedEmail?.images_used?.length || 0} images</p>
+                      <p>Cost: ${generatedEmail?.cost_usd}</p>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => {
-                      const win = window.open('', '_blank');
-                      if (win && generatedEmail.html_content) {
-                        win.document.write(generatedEmail.html_content);
-                        win.document.close();
+                      const html = generatedEmail?.html_content || generatedEmail?.email?.html_content;
+                      if (html) {
+                        const win = window.open('', '_blank');
+                        if (win) {
+                          win.document.write(html);
+                          win.document.close();
+                        }
+                      } else {
+                        alert('No HTML content available');
                       }
                     }}
                     className="glass-button px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2"
                   >
                     <CheckCircle className="w-4 h-4" />
                     View Email
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const html = generatedEmail?.html_content || generatedEmail?.email?.html_content;
+                      if (html) {
+                        const blob = new Blob([html], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `email-${Date.now()}.html`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }
+                    }}
+                    className="glass-hover px-6 py-3 rounded-xl text-white/80 font-medium border border-white/20 flex items-center gap-2"
+                  >
+                    <Code className="w-4 h-4" />
+                    Download HTML
                   </button>
                   <button
                     type="button"
