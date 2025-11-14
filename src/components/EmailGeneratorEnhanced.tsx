@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Loader2, CheckCircle, XCircle, Wand2, Package, AlertCircle, Code } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle, XCircle, Wand2, Package, AlertCircle, Code, Settings } from 'lucide-react';
 import axios from 'axios';
+import EmailStrategy from './EmailStrategy';
 
 const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
 
@@ -36,6 +37,20 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
   // Dev tools
   const [showDebug, setShowDebug] = useState(false);
   const [apiError, setApiError] = useState<any>(null);
+  
+  // Email Strategy
+  const [showStrategy, setShowStrategy] = useState(false);
+  const [emailStrategy, setEmailStrategy] = useState({
+    emailGoal: 'sales',
+    headlineStyle: 'benefit',
+    copyLength: 'concise',
+    heroImageType: 'lifestyle',
+    productImageStyle: 'front',
+    useUrgency: false,
+    useSocialProof: false,
+    includeDiscount: false,
+    discountCode: ''
+  });
 
   // Load collections on mount
   useEffect(() => {
@@ -101,6 +116,7 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
         campaignBrief: brief,
         campaignType,
         tone,
+        strategy: emailStrategy, // Include strategy
       };
 
       if (!useAI && selectedProducts.length > 0) {
@@ -257,6 +273,31 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
               </select>
             </div>
           </div>
+
+          {/* AI Strategy Toggle */}
+          <div className="flex items-center justify-between">
+            <label className="block text-white/90 font-medium text-sm">
+              AI Strategy (Optional)
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowStrategy(!showStrategy)}
+              className="text-purple-300 text-xs hover:text-purple-200 flex items-center gap-1"
+            >
+              <Settings className="w-3 h-3" />
+              {showStrategy ? 'Hide' : 'Customize'}
+            </button>
+          </div>
+
+          {/* Email Strategy Panel */}
+          <AnimatePresence>
+            {showStrategy && (
+              <EmailStrategy 
+                strategy={emailStrategy} 
+                onStrategyChange={setEmailStrategy}
+              />
+            )}
+          </AnimatePresence>
 
           {/* Product Selection Mode */}
           <div>
