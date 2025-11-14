@@ -399,6 +399,30 @@ export async function updateBrandProfile(userId: string, data: any) {
     params.push(data.defaultLayout);
     paramIndex++;
   }
+  
+  if (data.logoUrls) {
+    fields.push(`logo_urls = $${paramIndex}`);
+    params.push(JSON.stringify(data.logoUrls));
+    paramIndex++;
+  }
+  
+  if (data.footerTemplate) {
+    fields.push(`footer_template = $${paramIndex}`);
+    params.push(data.footerTemplate);
+    paramIndex++;
+  }
+  
+  if (data.footerLinks) {
+    fields.push(`footer_links = $${paramIndex}`);
+    params.push(JSON.stringify(data.footerLinks));
+    paramIndex++;
+  }
+  
+  if (data.buttonStyle) {
+    fields.push(`button_style = $${paramIndex}`);
+    params.push(JSON.stringify(data.buttonStyle));
+    paramIndex++;
+  }
 
   if (fields.length === 0) {
     throw new AppError(400, 'No fields to update');
@@ -414,6 +438,10 @@ export async function updateBrandProfile(userId: string, data: any) {
   if (data.colorPalette) columnNames.push('color_palette');
   if (data.typography) columnNames.push('typography');
   if (data.defaultLayout) columnNames.push('default_layout');
+  if (data.logoUrls) columnNames.push('logo_urls');
+  if (data.footerTemplate) columnNames.push('footer_template');
+  if (data.footerLinks) columnNames.push('footer_links');
+  if (data.buttonStyle) columnNames.push('button_style');
 
   const result = await query(
     `INSERT INTO brand_profiles (user_id, ${columnNames.join(', ')})
