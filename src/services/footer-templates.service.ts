@@ -74,54 +74,62 @@ export function generateMinimalFooter(brandProfile: any, links: any[]): string {
 }
 
 /**
- * Generate MJML for Navigation Grid footer
+ * Generate MJML for Navigation Grid footer (Like NY & Company)
  */
 export function generateNavigationFooter(brandProfile: any, links: any[]): string {
   const primaryColor = brandProfile.color_palette?.primary || '#000000';
-  const bgColor = brandProfile.color_palette?.background || '#F7F7F7';
+  const bgColor = brandProfile.color_palette?.background || '#F8F8F8';
   
-  // Split links into pairs for 2-column grid
-  const linkPairs = [];
+  // Split into 2x2 grid
+  const rows = [];
   for (let i = 0; i < links.length; i += 2) {
-    linkPairs.push(links.slice(i, i + 2));
+    rows.push(links.slice(i, i + 2));
   }
   
   return `
-    <mj-section background-color="${bgColor}" padding="30px 20px">
+    <!-- Category Navigation Grid -->
+    <mj-section background-color="#FFFFFF" padding="0">
       <mj-column>
-        <mj-text align="center" font-size="18px" font-weight="bold" padding-bottom="20px">
-          Shop by Category
-        </mj-text>
+        ${rows.map(row => `
+        <mj-table>
+          <tr>
+            ${row.map(link => `
+            <td style="width: 50%; padding: 2px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background: ${bgColor}; padding: 8%; text-align: center; font-weight: 450; font-size: 17px;">
+                    <a href="${link.url}" style="color: ${primaryColor}; text-decoration: none; display: block;">
+                      <strong>${link.text.toUpperCase()}</strong>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            `).join('')}
+          </tr>
+        </mj-table>
+        `).join('')}
       </mj-column>
     </mj-section>
     
-    ${linkPairs.map(pair => `
-    <mj-section background-color="${bgColor}" padding="5px 20px">
-      ${pair.map(link => `
-      <mj-column width="50%">
-        <mj-button 
-          href="${link.url}"
-          background-color="transparent"
-          color="${primaryColor}"
-          border="2px solid ${primaryColor}"
-          font-size="14px"
-          font-weight="bold"
-          padding="12px"
-          inner-padding="12px 24px"
-        >
-          ${link.text.toUpperCase()}
-        </mj-button>
-      </mj-column>
-      `).join('')}
-    </mj-section>
-    `).join('')}
-    
-    <mj-section background-color="${primaryColor}" padding="30px 20px">
+    <!-- Company Info -->
+    <mj-section background-color="#FFFFFF" padding="30px 18px 9px">
       <mj-column>
-        <mj-text align="center" color="#FFFFFF" font-size="16px" font-weight="bold">
-          ${brandProfile.brand_name || 'Company'}
+        ${brandProfile.logo_urls?.footer ? `
+        <mj-image 
+          src="${brandProfile.logo_urls.footer}" 
+          width="120px" 
+          padding-bottom="15px"
+        />
+        ` : ''}
+        
+        <mj-text align="center" font-size="12px" line-height="1.8" color="#666666">
+          <a href="#" style="color: ${primaryColor}; text-decoration: none;">Unsubscribe</a> | 
+          <a href="#" style="color: ${primaryColor}; text-decoration: none;">Privacy</a>
         </mj-text>
-        <mj-text align="center" color="#CCCCCC" font-size="11px" padding-top="10px">
+        
+        <mj-text align="center" font-size="11px" padding-top="10px" color="#999999">
+          ${brandProfile.brand_name || 'Company'}<br/>
           © ${new Date().getFullYear()} All rights reserved.
         </mj-text>
       </mj-column>
@@ -130,7 +138,7 @@ export function generateNavigationFooter(brandProfile: any, links: any[]): strin
 }
 
 /**
- * Generate MJML for Social/Engagement footer
+ * Generate MJML for Social/Engagement footer (Like Caraway)
  */
 export function generateSocialFooter(brandProfile: any, links: any[]): string {
   const primaryColor = brandProfile.color_palette?.primary || '#000000';
@@ -147,35 +155,48 @@ export function generateSocialFooter(brandProfile: any, links: any[]): string {
   const regularLinks = links.filter(l => !socialLinks.includes(l));
   
   return `
+    <!-- Full-width Link Blocks -->
     <mj-section background-color="#FFFFFF" padding="20px">
       <mj-column>
-        ${regularLinks.map(link => `
-        <mj-text align="center" padding="10px">
-          <a href="${link.url}" style="color: ${accentColor}; text-decoration: none; font-size: 16px; font-weight: 500;">
+        ${regularLinks.map((link, index) => `
+        <mj-text align="center" padding="${index === 0 ? '15px' : '12px'}">
+          <a href="${link.url}" style="color: ${accentColor}; text-decoration: none; font-size: 16px; font-weight: 500; display: block;">
             ${link.text} →
           </a>
         </mj-text>
-        <mj-divider border-width="1px" border-color="#E5E5E5" padding="5px 60px" />
+        ${index < regularLinks.length - 1 ? `
+        <mj-divider border-width="1px" border-color="#E5E5E5" padding="0 40px" />
+        ` : ''}
         `).join('')}
       </mj-column>
     </mj-section>
     
     ${socialLinks.length > 0 ? `
+    <!-- Social Icons -->
     <mj-section background-color="#F7F7F7" padding="30px 20px">
       <mj-column>
         <mj-text align="center" color="#666666" font-size="14px" padding-bottom="15px">
           Follow Us
         </mj-text>
-        <mj-social font-size="15px" icon-size="32px" mode="horizontal">
+        <mj-social font-size="15px" icon-size="40px" mode="horizontal" padding="10px">
           ${socialLinks.map(link => {
-            const platform = link.text.toLowerCase();
-            return `<mj-social-element name="${platform}" href="${link.url}"></mj-social-element>`;
+            const platform = link.text.toLowerCase().replace(/\s+/g, '');
+            const iconMap: any = {
+              'instagram': 'instagram',
+              'facebook': 'facebook', 
+              'twitter': 'twitter',
+              'tiktok': 'twitter', // MJML doesn't have TikTok, use Twitter as placeholder
+              'youtube': 'youtube',
+              'pinterest': 'pinterest'
+            };
+            return `<mj-social-element name="${iconMap[platform] || 'web'}" href="${link.url}"></mj-social-element>`;
           }).join('')}
         </mj-social>
       </mj-column>
     </mj-section>
     ` : ''}
     
+    <!-- Company Footer -->
     <mj-section background-color="${primaryColor}" padding="30px 20px">
       <mj-column>
         ${brandProfile.logo_urls?.footer ? `
@@ -190,8 +211,10 @@ export function generateSocialFooter(brandProfile: any, links: any[]): string {
         </mj-text>
         `}
         
-        <mj-text align="center" color="#CCCCCC" font-size="11px">
-          © ${new Date().getFullYear()} ${brandProfile.brand_name || 'Company'}. All rights reserved.
+        <mj-text align="center" color="#CCCCCC" font-size="11px" line-height="1.6">
+          ${brandProfile.brand_name || 'Company'}<br/>
+          123 Main Street, City, State 12345<br/>
+          © ${new Date().getFullYear()} All rights reserved.
         </mj-text>
       </mj-column>
     </mj-section>
