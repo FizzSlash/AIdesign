@@ -231,12 +231,12 @@ export async function getProducts(
   
   if (filters?.collectionId) {
     // Filter by collection - check if product belongs to this collection
+    // The collectionId comes as a string, need to match against JSONB id field
     conditions.push(`EXISTS (
       SELECT 1 FROM jsonb_array_elements(collections) AS col
-      WHERE (col->>'id')::text = $${paramIndex}
-        OR (col->>'title')::text = $${paramIndex}
+      WHERE (col->>'id')::bigint = $${paramIndex}::bigint
     )`);
-    params.push(filters.collectionId);
+    params.push(parseInt(filters.collectionId));
     paramIndex++;
   }
   
