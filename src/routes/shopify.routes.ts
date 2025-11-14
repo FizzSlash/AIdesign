@@ -51,15 +51,7 @@ router.get('/products', async (req: AuthRequest, res, next) => {
   }
 });
 
-// GET /api/v1/shopify/collections
-router.get('/collections', async (req: AuthRequest, res, next) => {
-  try {
-    const collections = await shopifyService.fetchCollections(req.user!.id);
-    res.json({ collections });
-  } catch (error) {
-    next(error);
-  }
-});
+// Removed duplicate - using enhanced service below
 
 // GET /api/v1/shopify/products/search
 router.get('/products/search', async (req: AuthRequest, res, next) => {
