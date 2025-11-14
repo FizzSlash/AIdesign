@@ -667,22 +667,59 @@ export default function BrandSetup({ token }: BrandSetupProps) {
         </p>
 
         {/* Footer Preview */}
-        <div className="mt-6 glass rounded-xl p-4 bg-black/30">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              {footerLinks.map((link, i) => (
-                <span key={i}>
-                  {i > 0 && <span className="text-white/30 mx-2">|</span>}
-                  <a href="#" className="text-white/70 hover:text-white text-sm">
-                    {link.text}
-                  </a>
-                </span>
-              ))}
+        <div className="mt-6 glass rounded-xl overflow-hidden">
+          {footerTemplate === 'minimal' && (
+            <div className="bg-black/30 p-6 text-center">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                {footerLinks.map((link, i) => (
+                  <span key={i}>
+                    {i > 0 && <span className="text-white/30 mx-2">|</span>}
+                    <a href="#" className="text-white/70 hover:text-white text-sm">
+                      {link.text}
+                    </a>
+                  </span>
+                ))}
+              </div>
+              <p className="text-white/40 text-xs mt-3">
+                © 2025 {brandName}. All rights reserved.
+              </p>
             </div>
-            <p className="text-white/40 text-xs mt-3">
-              © 2025 {brandName}. All rights reserved.
-            </p>
-          </div>
+          )}
+          
+          {footerTemplate === 'navigation' && (
+            <div className="bg-white/5 p-4">
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {footerLinks.slice(0, 4).map((link, i) => (
+                  <div key={i} className="bg-white/10 p-4 rounded-lg text-center">
+                    <div className="text-white text-xs font-bold">{link.text.toUpperCase()}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-center">
+                <p className="text-white/50 text-xs">Unsubscribe | Privacy</p>
+                <p className="text-white/40 text-xs mt-2">© 2025 {brandName}</p>
+              </div>
+            </div>
+          )}
+          
+          {footerTemplate === 'social' && (
+            <div className="bg-white/5 p-4 space-y-2">
+              {footerLinks.filter(l => !['instagram', 'facebook', 'twitter'].some(s => l.text.toLowerCase().includes(s))).map((link, i) => (
+                <div key={i}>
+                  <div className="text-purple-300 text-sm py-2">{link.text} →</div>
+                  {i < footerLinks.length - 4 && <div className="border-t border-white/10"></div>}
+                </div>
+              ))}
+              <div className="flex justify-center gap-3 pt-3">
+                <div className="w-8 h-8 rounded-full bg-white/20"></div>
+                <div className="w-8 h-8 rounded-full bg-white/20"></div>
+                <div className="w-8 h-8 rounded-full bg-white/20"></div>
+              </div>
+              <div className="text-center pt-3">
+                <p className="text-white/40 text-xs">© 2025 {brandName}</p>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
 
