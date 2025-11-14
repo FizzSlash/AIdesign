@@ -407,9 +407,17 @@ export async function updateBrandProfile(userId: string, data: any) {
   fields.push(`updated_at = NOW()`);
   params.push(userId);
 
+  // Build column names from field assignments
+  const columnNames = [];
+  if (data.brandName) columnNames.push('brand_name');
+  if (data.brandVoice) columnNames.push('brand_voice');
+  if (data.colorPalette) columnNames.push('color_palette');
+  if (data.typography) columnNames.push('typography');
+  if (data.defaultLayout) columnNames.push('default_layout');
+
   const result = await query(
-    `INSERT INTO brand_profiles (user_id, ${fields.map((_, i) => `field_${i}`).join(', ')})
-     VALUES ($${paramIndex}, ${fields.map((_, i) => `$${i + 1}`).join(', ')})
+    `INSERT INTO brand_profiles (user_id, ${columnNames.join(', ')})
+     VALUES ($${paramIndex}, ${params.slice(0, -1).map((_, i) => `$${i + 1}`).join(', ')})
      ON CONFLICT (user_id) DO UPDATE SET ${fields.join(', ')}
      RETURNING *`,
     params
