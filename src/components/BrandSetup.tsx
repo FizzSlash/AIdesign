@@ -1,32 +1,451 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Palette } from 'lucide-react';
+import { Palette, Save, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
 
 interface BrandSetupProps {
   token: string;
 }
 
 export default function BrandSetup({ token }: BrandSetupProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-2xl p-8"
-    >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="glass rounded-xl p-2">
-          <Palette className="w-6 h-6 text-blue-300" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-white">Brand Setup</h2>
-          <p className="text-white/60 text-sm">Configure your brand colors and style</p>
-        </div>
-      </div>
+  const [brandName, setBrandName] = useState('My Store');
+  const [brandVoice, setBrandVoice] = useState('professional');
+  
+  // Colors
+  const [primaryColor, setPrimaryColor] = useState('#000000');
+  const [secondaryColor, setSecondaryColor] = useState('#666666');
+  const [accentColor, setAccentColor] = useState('#0066CC');
+  const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
+  
+  // Typography
+  const [headingFont, setHeadingFont] = useState('Arial, sans-serif');
+  const [bodyFont, setBodyFont] = useState('Arial, sans-serif');
+  
+  // Button Style
+  const [buttonRadius, setButtonRadius] = useState('4px');
+  const [buttonSize, setButtonSize] = useState('normal');
+  
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-      <div className="text-center py-12 text-white/60">
-        <p>Brand setup coming soon...</p>
-        <p className="text-sm mt-2">For now, using default brand settings</p>
-      </div>
-    </motion.div>
+  // Load existing profile
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/brand/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (response.data.profile) {
+        const p = response.data.profile;
+        setBrandName(p.brand_name || 'My Store');
+        setBrandVoice(p.brand_voice || 'professional');
+        
+        if (p.color_palette) {
+          const colors = typeof p.color_palette === 'string' 
+            ? JSON.parse(p.color_palette) 
+            : p.color_palette;
+          setPrimaryColor(colors.primary || '#000000');
+          setSecondaryColor(colors.secondary || '#666666');
+          setAccentColor(colors.accent || '#0066CC');
+          setBackgroundColor(colors.background || '#FFFFFF');
+        }
+        
+        if (p.typography) {
+          const typo = typeof p.typography === 'string'
+            ? JSON.parse(p.typography)
+            : p.typography;
+          setHeadingFont(typo.heading?.font || 'Arial, sans-serif');
+          setBodyFont(typo.body?.font || 'Arial, sans-serif');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    setSaveSuccess(false);
+
+    try {
+      await axios.patch(
+        `${API_URL}/brand/profile`,
+        {
+          brandName,
+          brandVoice,
+          colorPalette: {
+            primary: primaryColor,
+            secondary: secondaryColor,
+            accent: accentColor,
+            background: backgroundColor,
+            text: '#1F1F1F'
+          },
+          typography: {
+            heading: {
+              font: headingFont,
+              size: '32px',
+              weight: 'bold'
+            },
+            body: {
+              font: bodyFont,
+              size: '14px',
+              weight: 'normal'
+            }
+          }
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="glass rounded-xl p-3 bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
+              <Palette className="w-6 h-6 text-blue-300" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Brand Setup</h2>
+              <p className="text-white/50 text-sm">Customize your email branding</p>
+            </div>
+          </div>
+
+          <motion.button
+            onClick={handleSave}
+            disabled={saving}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="glass-button px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2"
+          >
+            {saving ? (
+              <>Saving...</>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Brand
+              </>
+            )}
+          </motion.button>
+        </div>
+
+        {saveSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 rounded-xl bg-green-500/20 border border-green-400/30 text-green-200 text-sm flex items-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4" />
+            Brand settings saved successfully!
+          </motion.div>
+        )}
+
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-400/30 text-red-200 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            {error}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Basic Info */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glass-card"
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Basic Information</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Brand Name</label>
+            <input
+              type="text"
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white"
+              placeholder="My Store"
+            />
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Brand Voice</label>
+            <select
+              value={brandVoice}
+              onChange={(e) => setBrandVoice(e.target.value)}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+            >
+              <option value="professional" className="bg-slate-900">Professional</option>
+              <option value="luxury" className="bg-slate-900">Luxury</option>
+              <option value="casual" className="bg-slate-900">Casual</option>
+              <option value="playful" className="bg-slate-900">Playful</option>
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Color Palette */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="glass-card"
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Color Palette</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Primary Color</label>
+            <div className="flex gap-3">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                className="w-16 h-12 rounded-lg cursor-pointer bg-transparent"
+              />
+              <input
+                type="text"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                className="glass-input flex-1 px-4 py-3 rounded-xl text-white font-mono text-sm"
+              />
+            </div>
+            <p className="text-white/40 text-xs mt-1">Buttons, CTAs</p>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Secondary Color</label>
+            <div className="flex gap-3">
+              <input
+                type="color"
+                value={secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.value)}
+                className="w-16 h-12 rounded-lg cursor-pointer"
+              />
+              <input
+                type="text"
+                value={secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.value)}
+                className="glass-input flex-1 px-4 py-3 rounded-xl text-white font-mono text-sm"
+              />
+            </div>
+            <p className="text-white/40 text-xs mt-1">Text, descriptions</p>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Accent Color</label>
+            <div className="flex gap-3">
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="w-16 h-12 rounded-lg cursor-pointer"
+              />
+              <input
+                type="text"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="glass-input flex-1 px-4 py-3 rounded-xl text-white font-mono text-sm"
+              />
+            </div>
+            <p className="text-white/40 text-xs mt-1">Prices, highlights</p>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Background Color</label>
+            <div className="flex gap-3">
+              <input
+                type="color"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                className="w-16 h-12 rounded-lg cursor-pointer"
+              />
+              <input
+                type="text"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                className="glass-input flex-1 px-4 py-3 rounded-xl text-white font-mono text-sm"
+              />
+            </div>
+            <p className="text-white/40 text-xs mt-1">Email background</p>
+          </div>
+        </div>
+
+        {/* Color Preview */}
+        <div className="mt-6 glass rounded-xl p-6" style={{ backgroundColor: backgroundColor }}>
+          <div className="flex gap-4 items-center justify-center">
+            <button
+              style={{ backgroundColor: primaryColor }}
+              className="px-6 py-3 rounded-lg text-white font-semibold"
+            >
+              Primary Button
+            </button>
+            <span style={{ color: secondaryColor }} className="font-medium">
+              Secondary Text
+            </span>
+            <span style={{ color: accentColor }} className="text-xl font-bold">
+              $99.99
+            </span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Typography */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-card"
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Typography</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Heading Font</label>
+            <select
+              value={headingFont}
+              onChange={(e) => setHeadingFont(e.target.value)}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+            >
+              <option value="Arial, sans-serif" className="bg-slate-900">Arial</option>
+              <option value="'Helvetica Neue', Helvetica, sans-serif" className="bg-slate-900">Helvetica</option>
+              <option value="Georgia, serif" className="bg-slate-900">Georgia</option>
+              <option value="'Times New Roman', serif" className="bg-slate-900">Times New Roman</option>
+              <option value="'Courier New', monospace" className="bg-slate-900">Courier New</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Body Font</label>
+            <select
+              value={bodyFont}
+              onChange={(e) => setBodyFont(e.target.value)}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+            >
+              <option value="Arial, sans-serif" className="bg-slate-900">Arial</option>
+              <option value="'Helvetica Neue', Helvetica, sans-serif" className="bg-slate-900">Helvetica</option>
+              <option value="Georgia, serif" className="bg-slate-900">Georgia</option>
+              <option value="Verdana, sans-serif" className="bg-slate-900">Verdana</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Font Preview */}
+        <div className="mt-6 glass rounded-xl p-6 bg-white/5">
+          <h2 style={{ fontFamily: headingFont }} className="text-2xl font-bold text-white mb-2">
+            Sample Headline
+          </h2>
+          <p style={{ fontFamily: bodyFont }} className="text-white/70">
+            This is how your email body text will look. The quick brown fox jumps over the lazy dog.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Button Style */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="glass-card"
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Button Style</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Corner Radius</label>
+            <select
+              value={buttonRadius}
+              onChange={(e) => setButtonRadius(e.target.value)}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+            >
+              <option value="0px" className="bg-slate-900">Sharp (0px)</option>
+              <option value="4px" className="bg-slate-900">Rounded (4px)</option>
+              <option value="8px" className="bg-slate-900">More Rounded (8px)</option>
+              <option value="24px" className="bg-slate-900">Pill (24px)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Button Size</label>
+            <select
+              value={buttonSize}
+              onChange={(e) => setButtonSize(e.target.value)}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+            >
+              <option value="compact" className="bg-slate-900">Compact</option>
+              <option value="normal" className="bg-slate-900">Normal</option>
+              <option value="large" className="bg-slate-900">Large</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Button Preview */}
+        <div className="mt-6 flex flex-wrap gap-4 items-center justify-center">
+          <button
+            style={{
+              backgroundColor: primaryColor,
+              borderRadius: buttonRadius,
+              padding: buttonSize === 'compact' ? '8px 16px' : buttonSize === 'large' ? '16px 32px' : '12px 24px'
+            }}
+            className="text-white font-semibold"
+          >
+            Preview Button
+          </button>
+          
+          <button
+            style={{
+              backgroundColor: 'transparent',
+              border: `2px solid ${primaryColor}`,
+              color: primaryColor,
+              borderRadius: buttonRadius,
+              padding: buttonSize === 'compact' ? '8px 16px' : buttonSize === 'large' ? '16px 32px' : '12px 24px'
+            }}
+            className="font-semibold"
+          >
+            Outline Style
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Save Button (Bottom) */}
+      <motion.button
+        onClick={handleSave}
+        disabled={saving}
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        className="glass-button w-full py-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-3"
+      >
+        {saving ? (
+          <>Saving Brand Settings...</>
+        ) : (
+          <>
+            <Save className="w-5 h-5" />
+            Save Brand Settings
+          </>
+        )}
+      </motion.button>
+    </div>
   );
 }
-
