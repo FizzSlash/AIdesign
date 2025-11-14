@@ -88,8 +88,10 @@ export async function syncCatalogEnhanced(userId: string) {
           ? parseFloat(product.variants[0].compareAtPrice)
           : null;
         
-        // Fetch which collections this product belongs to
-        const productCollections = await fetchProductCollections(credentials, product.id);
+        // Get collections for this product
+        // Note: Shopify API doesn't easily provide this in product endpoint
+        // For now, we'll match products to collections after syncing collections
+        const productCollections: any[] = [];
         
         await query(`
           INSERT INTO shopify_products (
@@ -141,10 +143,42 @@ export async function syncCatalogEnhanced(userId: string) {
       }
     }
     
+    // Now match products to collections
+    logger.info('Matching products to collections...');
+    let collectionsMatched = 0;
+    
+    for (const collection of collections) {
+      try {
+        // Fetch products in this collection
+        const collectionProducts = await fetchCollectionProducts(credentials, collection.id);
+        
+        // Update each product with this collection
+        for (const productId of collectionProducts) {
+          await query(`
+            UPDATE shopify_products
+            SET collections = 
+              CASE 
+                WHEN collections::text LIKE '%"id":${collection.id}%' THEN collections
+                ELSE collections || $1::jsonb
+              END
+            WHERE user_id = $2 AND shopify_product_id = $3
+          `, [
+            JSON.stringify([{ id: collection.id, title: collection.title, handle: collection.handle }]),
+            userId,
+            productId
+          ]);
+        }
+        collectionsMatched++;
+      } catch (error) {
+        logger.warn('Failed to match collection', { collectionId: collection.id, error });
+      }
+    }
+    
     logger.info('Enhanced sync complete', { 
       userId, 
       productsStored, 
       collectionsStored,
+      collectionsMatched,
       totalImages,
       totalVariants
     });
@@ -152,6 +186,7 @@ export async function syncCatalogEnhanced(userId: string) {
     return {
       productsSync: productsStored,
       collectionsFound: collectionsStored,
+      collectionsMatched,
       imagesStored: totalImages,
       variantsStored: totalVariants,
       totalInventory: products.reduce((sum, p) => 
@@ -323,9 +358,9 @@ async function fetchAllCollections(credentials: any) {
   })) || [];
 }
 
-async function fetchProductCollections(credentials: any, productId: number) {
+async function fetchCollectionProducts(credentials: any, collectionId: number) {
   try {
-    const url = `https://${credentials.shopDomain}/admin/api/2024-10/products/${productId}/collections.json`;
+    const url = `https://${credentials.shopDomain}/admin/api/2024-10/collections/${collectionId}/products.json`;
 
     const response = await fetch(url, {
       headers: {
@@ -340,12 +375,9 @@ async function fetchProductCollections(credentials: any, productId: number) {
 
     const data: any = await response.json();
     
-    return data.custom_collections?.map((col: any) => ({
-      id: col.id,
-      title: col.title,
-      handle: col.handle,
-    })) || [];
+    return data.products?.map((p: any) => p.id) || [];
   } catch (error) {
+    logger.warn('Failed to fetch collection products', { collectionId, error });
     return [];
   }
 }
