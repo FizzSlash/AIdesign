@@ -639,24 +639,207 @@ function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
 }
 
 // Step 3: Image Selection
-function ImagesStep({ onApprove, onBack }: any) {
+function ImagesStep({ copyData, onApprove, onBack }: any) {
+  const [heroType, setHeroType] = useState<'product' | 'lifestyle' | 'ai'>('ai');
+  const [aiHeroStyle, setAiHeroStyle] = useState<'dalle' | 'gradient'>('dalle');
+  const [generating, setGenerating] = useState(false);
+  const [generatedHero, setGeneratedHero] = useState('');
+  const [heroPrompt, setHeroPrompt] = useState('');
+
+  const handleGenerateHero = async () => {
+    setGenerating(true);
+    // Mock generation - will connect to API
+    setTimeout(() => {
+      setGeneratedHero('https://via.placeholder.com/1792x1024/6366f1/ffffff?text=AI+Generated+Hero');
+      setGenerating(false);
+    }, 3000);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="glass-card"
+      className="glass-card space-y-6"
     >
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3">
         <ImageIcon className="w-6 h-6 text-green-300" />
-        <h3 className="text-xl font-bold text-white">Step 3: Select Images</h3>
+        <div>
+          <h3 className="text-xl font-bold text-white">Step 3: Hero & Product Images</h3>
+          <p className="text-white/50 text-sm">Choose images for your email</p>
+        </div>
       </div>
-      
-      <p className="text-white/50 text-sm mb-4">Image selection coming soon...</p>
-      
+
+      {/* Hero Image Type */}
+      <div>
+        <label className="block text-white/80 text-sm font-medium mb-3">Hero Image</label>
+        <div className="grid grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => setHeroType('product')}
+            className={`p-4 rounded-xl transition-all ${
+              heroType === 'product'
+                ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 border-2 border-white/40'
+                : 'glass-hover border-2 border-white/10'
+            }`}
+          >
+            <div className="text-sm font-semibold text-white mb-1">Product Photo</div>
+            <div className="text-xs text-white/60">Use from Shopify</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setHeroType('lifestyle')}
+            className={`p-4 rounded-xl transition-all ${
+              heroType === 'lifestyle'
+                ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 border-2 border-white/40'
+                : 'glass-hover border-2 border-white/10'
+            }`}
+          >
+            <div className="text-sm font-semibold text-white mb-1">Lifestyle</div>
+            <div className="text-xs text-white/60">Styled/action</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setHeroType('ai')}
+            className={`p-4 rounded-xl transition-all ${
+              heroType === 'ai'
+                ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 border-2 border-white/40'
+                : 'glass-hover border-2 border-white/10'
+            }`}
+          >
+            <div className="text-sm font-semibold text-white mb-1 flex items-center gap-1">
+              AI Generate ⭐
+            </div>
+            <div className="text-xs text-white/60">$0.04</div>
+          </button>
+        </div>
+      </div>
+
+      {/* AI Hero Options */}
+      {heroType === 'ai' && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="glass rounded-xl p-5 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30"
+        >
+          <h4 className="text-white font-semibold mb-4">AI Hero Generator</h4>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Style</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAiHeroStyle('dalle')}
+                  className={`px-4 py-3 rounded-lg transition-all ${
+                    aiHeroStyle === 'dalle'
+                      ? 'bg-purple-500/40 border-2 border-purple-400'
+                      : 'glass-hover border border-white/10'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-white">DALL-E 3</div>
+                  <div className="text-xs text-white/60">Photorealistic</div>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setAiHeroStyle('gradient')}
+                  className={`px-4 py-3 rounded-lg transition-all ${
+                    aiHeroStyle === 'gradient'
+                      ? 'bg-purple-500/40 border-2 border-purple-400'
+                      : 'glass-hover border border-white/10'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-white">Text + Gradient</div>
+                  <div className="text-xs text-white/60">Instant, Free</div>
+                </button>
+              </div>
+            </div>
+
+            {aiHeroStyle === 'dalle' && (
+              <div>
+                <label className="block text-white/80 text-sm mb-2">
+                  Scene Description (optional - AI will auto-generate)
+                </label>
+                <textarea
+                  value={heroPrompt}
+                  onChange={(e) => setHeroPrompt(e.target.value)}
+                  rows={2}
+                  className="glass-input w-full px-4 py-3 rounded-lg text-white text-sm resize-none"
+                  placeholder="e.g., Snowboarder on mountain at sunset, dramatic action shot"
+                />
+                <p className="text-white/40 text-xs mt-1">
+                  Leave blank for AI to create based on your campaign
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={handleGenerateHero}
+              disabled={generating}
+              className="glass-button w-full py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2"
+            >
+              {generating ? (
+                <>
+                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                    <Sparkles className="w-4 h-4" />
+                  </motion.div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Generate Hero Image {aiHeroStyle === 'dalle' && '($0.04)'}
+                </>
+              )}
+            </button>
+
+            {generatedHero && (
+              <div className="glass rounded-lg overflow-hidden">
+                <img src={generatedHero} alt="Generated hero" className="w-full" />
+                <div className="p-3 bg-black/20">
+                  <p className="text-white/70 text-xs">Generated with {aiHeroStyle === 'dalle' ? 'DALL-E 3' : 'Gradient'}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Product Images Preview */}
+      <div>
+        <label className="block text-white/80 text-sm font-medium mb-3">
+          Product Images ({copyData?.products?.length || 0} products)
+        </label>
+        <div className="glass rounded-xl p-4 bg-white/5">
+          <p className="text-white/60 text-sm">
+            Using first image from each product (can customize in future)
+          </p>
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {copyData?.products?.slice(0, 6).map((product: any, i: number) => (
+              <div key={i} className="aspect-square bg-white/5 rounded-lg flex items-center justify-center">
+                <p className="text-white/40 text-xs text-center px-2">{product.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
       <div className="flex gap-3">
-        <button onClick={onBack} className="glass-hover px-6 py-3 rounded-xl">Back</button>
-        <button onClick={() => onApprove({})} className="glass-button flex-1 py-3 rounded-xl">
+        <button 
+          onClick={onBack}
+          className="glass-hover px-6 py-3 rounded-xl text-white/80 border border-white/20"
+        >
+          Back
+        </button>
+        <button 
+          onClick={() => onApprove({ heroType, generatedHero, aiHeroStyle })} 
+          className="glass-button flex-1 py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <CheckCircle className="w-4 h-4" />
           Approve & Continue
         </button>
       </div>
