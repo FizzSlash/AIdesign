@@ -35,6 +35,28 @@ export default function BrandSetup({ token }: BrandSetupProps) {
     { text: 'Contact Us', url: 'https://example.com/contact' },
     { text: 'Privacy Policy', url: 'https://example.com/privacy' }
   ]);
+  const [footerTemplate, setFooterTemplate] = useState('minimal');
+  
+  const footerTemplates = {
+    minimal: [
+      { text: 'Unsubscribe', url: '{{unsubscribe_link}}' },
+      { text: 'Contact Us', url: 'https://yourstore.com/contact' }
+    ],
+    standard: [
+      { text: 'Shop', url: 'https://yourstore.com' },
+      { text: 'About', url: 'https://yourstore.com/about' },
+      { text: 'Contact', url: 'https://yourstore.com/contact' },
+      { text: 'Unsubscribe', url: '{{unsubscribe_link}}' }
+    ],
+    social: [
+      { text: 'Instagram', url: 'https://instagram.com/yourstore' },
+      { text: 'Facebook', url: 'https://facebook.com/yourstore' },
+      { text: 'Twitter', url: 'https://twitter.com/yourstore' },
+      { text: 'Join Research Group', url: 'https://yourstore.com/research' },
+      { text: 'Refer A Friend', url: 'https://yourstore.com/refer' },
+      { text: 'Unsubscribe', url: '{{unsubscribe_link}}' }
+    ]
+  };
   
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -510,6 +532,61 @@ export default function BrandSetup({ token }: BrandSetupProps) {
       >
         <h3 className="text-lg font-semibold text-white mb-4">Email Footer</h3>
         
+        {/* Footer Templates */}
+        <div className="mb-6">
+          <label className="block text-white/80 text-sm mb-3">Choose Template</label>
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setFooterTemplate('minimal');
+                setFooterLinks(footerTemplates.minimal);
+              }}
+              className={`px-4 py-3 rounded-xl font-medium transition-all ${
+                footerTemplate === 'minimal'
+                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border border-white/20'
+                  : 'glass-hover text-white/60 border border-white/10'
+              }`}
+            >
+              <div className="text-sm font-semibold mb-1">Minimal</div>
+              <div className="text-xs opacity-70">2 links</div>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => {
+                setFooterTemplate('standard');
+                setFooterLinks(footerTemplates.standard);
+              }}
+              className={`px-4 py-3 rounded-xl font-medium transition-all ${
+                footerTemplate === 'standard'
+                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border border-white/20'
+                  : 'glass-hover text-white/60 border border-white/10'
+              }`}
+            >
+              <div className="text-sm font-semibold mb-1">Standard</div>
+              <div className="text-xs opacity-70">4 links</div>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => {
+                setFooterTemplate('social');
+                setFooterLinks(footerTemplates.social);
+              }}
+              className={`px-4 py-3 rounded-xl font-medium transition-all ${
+                footerTemplate === 'social'
+                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border border-white/20'
+                  : 'glass-hover text-white/60 border border-white/10'
+              }`}
+            >
+              <div className="text-sm font-semibold mb-1">Social</div>
+              <div className="text-xs opacity-70">6 links</div>
+            </button>
+          </div>
+        </div>
+
+        <h4 className="text-sm font-medium text-white/70 mb-3">Customize Links</h4>
         <div className="space-y-3">
           {footerLinks.map((link, index) => (
             <div key={index} className="grid grid-cols-2 gap-3">
