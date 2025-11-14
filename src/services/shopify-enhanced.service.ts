@@ -183,7 +183,11 @@ export async function getProducts(
   let paramIndex = 2;
   
   if (filters?.collectionId) {
-    conditions.push(`collections @> '[{"id": ${filters.collectionId}}]'::jsonb`);
+    // Check if collectionId is numeric
+    const collectionIdNum = parseInt(filters.collectionId);
+    if (!isNaN(collectionIdNum)) {
+      conditions.push(`collections::text ILIKE '%"id":${collectionIdNum}%'`);
+    }
   }
   
   if (filters?.minInventory) {
@@ -217,9 +221,9 @@ export async function getProducts(
   
   return result.rows.map(row => ({
     ...row,
-    images: JSON.parse(row.images || '[]'),
-    variants: JSON.parse(row.variants || '[]'),
-    collections: JSON.parse(row.collections || '[]')
+    images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images,
+    variants: typeof row.variants === 'string' ? JSON.parse(row.variants) : row.variants,
+    collections: typeof row.collections === 'string' ? JSON.parse(row.collections) : row.collections
   }));
 }
 
