@@ -370,11 +370,27 @@ function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
           "Your Best Season Starts Here - Limited Time Offer"
         ],
         subheadline: "Discover our premium collection of snowboards - perfect for every skill level",
+        bodyParagraph: "Looking for the perfect snowboard? Our curated collection features top-tier boards designed for every riding style. From beginners to pros, find your ideal match and conquer the mountain.",
         heroCtaText: "Shop Snowboards",
-        productDescriptions: [
-          "Experience unmatched control with this versatile all-mountain board",
-          "Engineered for speed and precision on any terrain",
-          "Perfect blend of flexibility and power for advanced riders"
+        products: [
+          {
+            name: "The Collection Snowboard: Hydrogen",
+            description: "Experience unmatched versatility with the Hydrogen - engineered for all-mountain performance and precision control",
+            price: "$729.95",
+            ctaText: "Buy Now"
+          },
+          {
+            name: "The Collection Snowboard: Oxygen",
+            description: "Elevate your ride with the Oxygen - premium craftsmanship meets cutting-edge design for ultimate performance",
+            price: "$1,025.00",
+            ctaText: "Shop Now"
+          },
+          {
+            name: "The Multi-managed Snowboard",
+            description: "Versatility redefined - handle any terrain with confidence and style with this adaptive all-mountain board",
+            price: "$729.95",
+            ctaText: "Discover More"
+          }
         ]
       });
       setGenerating(false);
@@ -500,6 +516,20 @@ function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
             />
           </div>
 
+          {/* Body Paragraph */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-white/80 text-sm font-medium">Body Paragraph</label>
+              <span className="text-white/40 text-xs">Optional</span>
+            </div>
+            <textarea
+              value={copy.bodyParagraph}
+              onChange={(e) => setCopy({ ...copy, bodyParagraph: e.target.value })}
+              rows={3}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white resize-none"
+            />
+          </div>
+
           {/* Hero CTA */}
           <div>
             <label className="block text-white/80 text-sm font-medium mb-2">Main CTA Text</label>
@@ -511,15 +541,75 @@ function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
             />
           </div>
 
-          {/* Preview */}
-          <div className="glass rounded-xl p-6 bg-white/5">
-            <p className="text-purple-200 text-sm font-medium mb-3">Preview:</p>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-white">{copy.headlineOptions[selectedHeadline]}</h2>
-              <p className="text-white/70">{copy.subheadline}</p>
-              <button className="glass-button px-6 py-3 rounded-lg text-white font-semibold mt-3">
-                {copy.heroCtaText}
-              </button>
+          {/* Product Descriptions */}
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-3">
+              Product Descriptions ({copy.products?.length || 0} products)
+            </label>
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+              {copy.products?.map((product: any, index: number) => (
+                <div key={index} className="glass rounded-xl p-4 bg-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-white font-medium text-sm">{product.name}</p>
+                    <span className="text-purple-300 text-sm font-semibold">{product.price}</span>
+                  </div>
+                  <textarea
+                    value={product.description}
+                    onChange={(e) => {
+                      const newProducts = [...copy.products];
+                      newProducts[index].description = e.target.value;
+                      setCopy({ ...copy, products: newProducts });
+                    }}
+                    rows={2}
+                    className="glass-input w-full px-3 py-2 rounded-lg text-white text-sm resize-none"
+                  />
+                  <div className="mt-2">
+                    <input
+                      type="text"
+                      value={product.ctaText}
+                      onChange={(e) => {
+                        const newProducts = [...copy.products];
+                        newProducts[index].ctaText = e.target.value;
+                        setCopy({ ...copy, products: newProducts });
+                      }}
+                      className="glass-input w-full px-3 py-2 rounded-lg text-white text-xs"
+                      placeholder="CTA text"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Complete Preview */}
+          <div className="glass rounded-xl p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30">
+            <p className="text-purple-200 text-sm font-medium mb-4">✨ Email Preview:</p>
+            <div className="space-y-4">
+              {/* Hero */}
+              <div className="pb-4 border-b border-white/10">
+                <h2 className="text-2xl font-bold text-white mb-2">{copy.headlineOptions[selectedHeadline]}</h2>
+                <p className="text-white/70 mb-3">{copy.subheadline}</p>
+                {copy.bodyParagraph && (
+                  <p className="text-white/60 text-sm mb-3">{copy.bodyParagraph}</p>
+                )}
+                <button className="glass-button px-6 py-3 rounded-lg text-white font-semibold">
+                  {copy.heroCtaText}
+                </button>
+              </div>
+              
+              {/* Products */}
+              <div>
+                <p className="text-white/50 text-xs mb-2">PRODUCTS</p>
+                {copy.products?.slice(0, 2).map((product: any, i: number) => (
+                  <div key={i} className="mb-3">
+                    <p className="text-white font-semibold text-sm">{product.name} - {product.price}</p>
+                    <p className="text-white/60 text-xs">{product.description}</p>
+                  </div>
+                ))}
+                {copy.products?.length > 2 && (
+                  <p className="text-white/40 text-xs">+ {copy.products.length - 2} more products...</p>
+                )}
+              </div>
             </div>
           </div>
 
