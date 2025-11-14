@@ -152,6 +152,8 @@ export async function syncCatalogEnhanced(userId: string) {
         // Fetch products in this collection
         const collectionProducts = await fetchCollectionProducts(credentials, collection.id);
         
+        logger.info(`Collection "${collection.title}" has ${collectionProducts.length} products`);
+        
         // Update each product with this collection
         for (const productId of collectionProducts) {
           await query(`
@@ -168,6 +170,14 @@ export async function syncCatalogEnhanced(userId: string) {
             productId
           ]);
         }
+        
+        // Update collection with actual product count
+        await query(`
+          UPDATE shopify_collections
+          SET products_count = $1
+          WHERE user_id = $2 AND shopify_collection_id = $3
+        `, [collectionProducts.length, userId, collection.id]);
+        
         collectionsMatched++;
       } catch (error) {
         logger.warn('Failed to match collection', { collectionId: collection.id, error });
