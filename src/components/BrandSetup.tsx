@@ -12,6 +12,8 @@ interface BrandSetupProps {
 export default function BrandSetup({ token }: BrandSetupProps) {
   const [brandName, setBrandName] = useState('My Store');
   const [brandVoice, setBrandVoice] = useState('professional');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   
   // Colors
   const [primaryColor, setPrimaryColor] = useState('#000000');
@@ -26,6 +28,13 @@ export default function BrandSetup({ token }: BrandSetupProps) {
   // Button Style
   const [buttonRadius, setButtonRadius] = useState('4px');
   const [buttonSize, setButtonSize] = useState('normal');
+  
+  // Footer
+  const [footerLinks, setFooterLinks] = useState([
+    { text: 'Unsubscribe', url: '{{unsubscribe_link}}' },
+    { text: 'Contact Us', url: 'https://example.com/contact' },
+    { text: 'Privacy Policy', url: 'https://example.com/privacy' }
+  ]);
   
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -46,6 +55,11 @@ export default function BrandSetup({ token }: BrandSetupProps) {
         const p = response.data.profile;
         setBrandName(p.brand_name || 'My Store');
         setBrandVoice(p.brand_voice || 'professional');
+        
+        if (p.logo_urls) {
+          const logos = typeof p.logo_urls === 'string' ? JSON.parse(p.logo_urls) : p.logo_urls;
+          setLogoUrl(logos.header || '');
+        }
         
         if (p.color_palette) {
           const colors = typeof p.color_palette === 'string' 
@@ -70,6 +84,32 @@ export default function BrandSetup({ token }: BrandSetupProps) {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('files', file);
+      formData.append('assetType', 'logo');
+
+      const response = await axios.post(
+        `${API_URL}/brand/upload-assets`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.assets?.[0]?.cdn_url) {
+        setLogoUrl(response.data.assets[0].cdn_url);
+      }
+    } catch (err) {
+      setError('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError('');
@@ -81,6 +121,10 @@ export default function BrandSetup({ token }: BrandSetupProps) {
         {
           brandName,
           brandVoice,
+          logoUrls: {
+            header: logoUrl,
+            footer: logoUrl
+          },
           colorPalette: {
             primary: primaryColor,
             secondary: secondaryColor,
@@ -169,16 +213,42 @@ export default function BrandSetup({ token }: BrandSetupProps) {
         )}
       </motion.div>
 
-      {/* Basic Info */}
+      {/* Logo Upload */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="glass-card"
       >
-        <h3 className="text-lg font-semibold text-white mb-4">Basic Information</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">Logo</h3>
         
         <div className="space-y-4">
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Upload Logo</label>
+            <div className="flex items-center gap-4">
+              {logoUrl && (
+                <div className="glass rounded-xl p-4 bg-white/5">
+                  <img src={logoUrl} alt="Logo" className="h-16 max-w-[200px] object-contain" />
+                </div>
+              )}
+              
+              <label className="glass-hover px-6 py-3 rounded-xl text-white/80 font-medium border border-white/20 cursor-pointer flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                {uploadingLogo ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  disabled={uploadingLogo}
+                />
+              </label>
+            </div>
+            <p className="text-white/40 text-xs mt-2">
+              PNG or JPG. Recommended: 200-400px wide, transparent background
+            </p>
+          </div>
+
           <div>
             <label className="block text-white/80 text-sm mb-2">Brand Name</label>
             <input
@@ -188,6 +258,7 @@ export default function BrandSetup({ token }: BrandSetupProps) {
               className="glass-input w-full px-4 py-3 rounded-xl text-white"
               placeholder="My Store"
             />
+            <p className="text-white/40 text-xs mt-1">Used if no logo uploaded</p>
           </div>
 
           <div>
@@ -202,6 +273,7 @@ export default function BrandSetup({ token }: BrandSetupProps) {
               <option value="casual" className="bg-slate-900">Casual</option>
               <option value="playful" className="bg-slate-900">Playful</option>
             </select>
+            <p className="text-white/40 text-xs mt-1">Affects AI-generated copy tone</p>
           </div>
         </div>
       </motion.div>
@@ -429,6 +501,87 @@ export default function BrandSetup({ token }: BrandSetupProps) {
         </div>
       </motion.div>
 
+      {/* Footer Links */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="glass-card"
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Email Footer</h3>
+        
+        <div className="space-y-3">
+          {footerLinks.map((link, index) => (
+            <div key={index} className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={link.text}
+                onChange={(e) => {
+                  const newLinks = [...footerLinks];
+                  newLinks[index].text = e.target.value;
+                  setFooterLinks(newLinks);
+                }}
+                className="glass-input px-4 py-2 rounded-lg text-white text-sm"
+                placeholder="Link text"
+              />
+              <input
+                type="text"
+                value={link.url}
+                onChange={(e) => {
+                  const newLinks = [...footerLinks];
+                  newLinks[index].url = e.target.value;
+                  setFooterLinks(newLinks);
+                }}
+                className="glass-input px-4 py-2 rounded-lg text-white text-sm font-mono"
+                placeholder="URL"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setFooterLinks([...footerLinks, { text: 'New Link', url: 'https://' }])}
+            className="glass-hover px-4 py-2 rounded-lg text-white/70 text-sm border border-white/10"
+          >
+            + Add Link
+          </button>
+          {footerLinks.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setFooterLinks(footerLinks.slice(0, -1))}
+              className="glass-hover px-4 py-2 rounded-lg text-white/70 text-sm border border-white/10"
+            >
+              Remove Last
+            </button>
+          )}
+        </div>
+
+        <p className="text-white/40 text-xs mt-4">
+          💡 Use <code className="bg-white/10 px-1 rounded">{'{{unsubscribe_link}}'}</code> for Klaviyo unsubscribe
+        </p>
+
+        {/* Footer Preview */}
+        <div className="mt-6 glass rounded-xl p-4 bg-black/30">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              {footerLinks.map((link, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="text-white/30 mx-2">|</span>}
+                  <a href="#" className="text-white/70 hover:text-white text-sm">
+                    {link.text}
+                  </a>
+                </span>
+              ))}
+            </div>
+            <p className="text-white/40 text-xs mt-3">
+              © 2025 {brandName}. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Save Button (Bottom) */}
       <motion.button
         onClick={handleSave}
@@ -449,3 +602,4 @@ export default function BrandSetup({ token }: BrandSetupProps) {
     </div>
   );
 }
+
