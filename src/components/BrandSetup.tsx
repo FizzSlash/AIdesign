@@ -165,7 +165,9 @@ export default function BrandSetup({ token }: BrandSetupProps) {
               size: '14px',
               weight: 'normal'
             }
-          }
+          },
+          footerTemplate: footerTemplate,
+          footerLinks: footerLinks
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -534,54 +536,79 @@ export default function BrandSetup({ token }: BrandSetupProps) {
         
         {/* Footer Templates */}
         <div className="mb-6">
-          <label className="block text-white/80 text-sm mb-3">Choose Template</label>
+          <label className="block text-white/80 text-sm mb-3">Footer Design</label>
           <div className="grid grid-cols-3 gap-3">
+            {/* Minimal */}
             <button
               type="button"
               onClick={() => {
                 setFooterTemplate('minimal');
                 setFooterLinks(footerTemplates.minimal);
               }}
-              className={`px-4 py-3 rounded-xl font-medium transition-all ${
+              className={`group px-4 py-4 rounded-xl transition-all ${
                 footerTemplate === 'minimal'
-                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border border-white/20'
-                  : 'glass-hover text-white/60 border border-white/10'
+                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border-2 border-white/40'
+                  : 'glass-hover text-white/60 border-2 border-white/10'
               }`}
             >
-              <div className="text-sm font-semibold mb-1">Minimal</div>
-              <div className="text-xs opacity-70">2 links</div>
+              <div className="text-sm font-semibold mb-2">Minimal Clean</div>
+              <div className="text-xs opacity-70 mb-3">Simple & elegant</div>
+              <div className="glass rounded-lg p-2 bg-black/20">
+                <div className="h-12 flex items-center justify-center">
+                  <div className="text-[8px] text-white/50">Link | Link</div>
+                </div>
+              </div>
             </button>
             
+            {/* Navigation */}
             <button
               type="button"
               onClick={() => {
-                setFooterTemplate('standard');
+                setFooterTemplate('navigation');
                 setFooterLinks(footerTemplates.standard);
               }}
-              className={`px-4 py-3 rounded-xl font-medium transition-all ${
-                footerTemplate === 'standard'
-                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border border-white/20'
-                  : 'glass-hover text-white/60 border border-white/10'
+              className={`group px-4 py-4 rounded-xl transition-all ${
+                footerTemplate === 'navigation'
+                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border-2 border-white/40'
+                  : 'glass-hover text-white/60 border-2 border-white/10'
               }`}
             >
-              <div className="text-sm font-semibold mb-1">Standard</div>
-              <div className="text-xs opacity-70">4 links</div>
+              <div className="text-sm font-semibold mb-2">Category Grid</div>
+              <div className="text-xs opacity-70 mb-3">Navigation blocks</div>
+              <div className="glass rounded-lg p-2 bg-black/20">
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="bg-white/10 rounded text-[6px] py-1">NEW</div>
+                  <div className="bg-white/10 rounded text-[6px] py-1">SALE</div>
+                </div>
+              </div>
             </button>
             
+            {/* Social */}
             <button
               type="button"
               onClick={() => {
                 setFooterTemplate('social');
                 setFooterLinks(footerTemplates.social);
               }}
-              className={`px-4 py-3 rounded-xl font-medium transition-all ${
+              className={`group px-4 py-4 rounded-xl transition-all ${
                 footerTemplate === 'social'
-                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border border-white/20'
-                  : 'glass-hover text-white/60 border border-white/10'
+                  ? 'bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border-2 border-white/40'
+                  : 'glass-hover text-white/60 border-2 border-white/10'
               }`}
             >
-              <div className="text-sm font-semibold mb-1">Social</div>
-              <div className="text-xs opacity-70">6 links</div>
+              <div className="text-sm font-semibold mb-2">Social Links</div>
+              <div className="text-xs opacity-70 mb-3">Full engagement</div>
+              <div className="glass rounded-lg p-2 bg-black/20">
+                <div className="space-y-1">
+                  <div className="h-2 bg-white/10 rounded"></div>
+                  <div className="h-2 bg-white/10 rounded"></div>
+                  <div className="flex gap-1 justify-center mt-2">
+                    <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                    <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                    <div className="w-3 h-3 bg-white/20 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
             </button>
           </div>
         </div>
