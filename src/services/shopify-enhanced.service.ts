@@ -38,20 +38,26 @@ export async function syncCatalogEnhanced(userId: string) {
     
     logger.info(`Fetched ${products.length} products and ${collections.length} collections`);
     
-    // Store collections
+    // Store collections with product IDs
     let collectionsStored = 0;
     for (const collection of collections) {
       try {
+        // Fetch products in this collection
+        const collectionProductIds = await fetchCollectionProducts(credentials, collection.id);
+        
+        logger.info(`Collection "${collection.title}" has ${collectionProductIds.length} products`);
+        
         await query(`
           INSERT INTO shopify_collections (
             user_id, shopify_collection_id, title, handle, description, 
-            image_url, products_count, published
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            image_url, product_ids, products_count, published
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           ON CONFLICT (user_id, shopify_collection_id) DO UPDATE SET
             title = $3,
             description = $5,
             image_url = $6,
-            products_count = $7,
+            product_ids = $7,
+            products_count = $8,
             updated_at = NOW()
         `, [
           userId,
@@ -60,7 +66,8 @@ export async function syncCatalogEnhanced(userId: string) {
           collection.handle,
           collection.description,
           collection.image?.src || null,
-          collection.productsCount,
+          collectionProductIds,
+          collectionProductIds.length,
           collection.published
         ]);
         collectionsStored++;
@@ -143,46 +150,8 @@ export async function syncCatalogEnhanced(userId: string) {
       }
     }
     
-    // Now match products to collections
-    logger.info('Matching products to collections...');
-    let collectionsMatched = 0;
-    
-    for (const collection of collections) {
-      try {
-        // Fetch products in this collection
-        const collectionProducts = await fetchCollectionProducts(credentials, collection.id);
-        
-        logger.info(`Collection "${collection.title}" has ${collectionProducts.length} products`);
-        
-        // Update each product with this collection
-        for (const productId of collectionProducts) {
-          await query(`
-            UPDATE shopify_products
-            SET collections = 
-              CASE 
-                WHEN collections::text LIKE '%"id":${collection.id}%' THEN collections
-                ELSE collections || $1::jsonb
-              END
-            WHERE user_id = $2 AND shopify_product_id = $3
-          `, [
-            JSON.stringify([{ id: collection.id, title: collection.title, handle: collection.handle }]),
-            userId,
-            productId
-          ]);
-        }
-        
-        // Update collection with actual product count
-        await query(`
-          UPDATE shopify_collections
-          SET products_count = $1
-          WHERE user_id = $2 AND shopify_collection_id = $3
-        `, [collectionProducts.length, userId, collection.id]);
-        
-        collectionsMatched++;
-      } catch (error) {
-        logger.warn('Failed to match collection', { collectionId: collection.id, error });
-      }
-    }
+    // Products already matched to collections above
+    // No need for separate matching step
     
     logger.info('Enhanced sync complete', { 
       userId, 
@@ -230,11 +199,12 @@ export async function getProducts(
   let paramIndex = 2;
   
   if (filters?.collectionId) {
-    // Filter by collection - check if product belongs to this collection
-    // The collectionId comes as a string, need to match against JSONB id field
-    conditions.push(`EXISTS (
-      SELECT 1 FROM jsonb_array_elements(collections) AS col
-      WHERE (col->>'id')::bigint = $${paramIndex}::bigint
+    // Filter by collection using the product_ids array in collections table
+    conditions.push(`shopify_product_id = ANY(
+      SELECT unnest(product_ids) 
+      FROM shopify_collections 
+      WHERE user_id = $1 
+        AND shopify_collection_id = $${paramIndex}::bigint
     )`);
     params.push(parseInt(filters.collectionId));
     paramIndex++;

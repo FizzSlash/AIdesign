@@ -76,6 +76,9 @@ CREATE TABLE IF NOT EXISTS shopify_collections (
     -- Collection image
     image_url VARCHAR(1000),
     
+    -- Product IDs in this collection
+    product_ids BIGINT[] DEFAULT '{}',
+    
     -- Stats
     products_count INT DEFAULT 0,
     
@@ -91,6 +94,7 @@ CREATE TABLE IF NOT EXISTS shopify_collections (
 
 CREATE INDEX idx_shopify_collections_user ON shopify_collections(user_id);
 CREATE INDEX idx_shopify_collections_handle ON shopify_collections(handle);
+CREATE INDEX idx_shopify_collections_products ON shopify_collections USING GIN(product_ids);
 
 -- Trigger for updated_at
 CREATE TRIGGER update_shopify_collections_updated_at 
