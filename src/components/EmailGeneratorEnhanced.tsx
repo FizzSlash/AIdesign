@@ -30,23 +30,46 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [collections, setCollections] = useState<any[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState('');
   
   // Dev tools
   const [showDebug, setShowDebug] = useState(false);
   const [apiError, setApiError] = useState<any>(null);
 
-  // Load products when switching to manual mode
+  // Load collections on mount
   useEffect(() => {
-    if (!useAI && products.length === 0) {
+    loadCollections();
+  }, []);
+
+  // Load products when switching to manual mode or collection changes
+  useEffect(() => {
+    if (!useAI) {
       loadProducts();
     }
-  }, [useAI]);
+  }, [useAI, selectedCollection]);
+
+  const loadCollections = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/shopify/collections`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCollections(response.data.collections || []);
+    } catch (error) {
+      console.error('Failed to load collections:', error);
+    }
+  };
 
   const loadProducts = async () => {
     setLoadingProducts(true);
     setApiError(null);
     try {
-      const response = await axios.get(`${API_URL}/shopify/products?limit=50`, {
+      let url = `${API_URL}/shopify/products-enhanced?limit=50&inStockOnly=true`;
+      if (selectedCollection) {
+        url += `&collectionId=${selectedCollection}`;
+      }
+      
+      const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(response.data.products || []);
@@ -299,6 +322,25 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
                     <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
                   )}
                 </div>
+
+                {/* Collection Filter */}
+                {collections.length > 0 && (
+                  <div className="mb-4">
+                    <label className="block text-white/70 text-sm mb-2">Filter by Collection</label>
+                    <select
+                      value={selectedCollection}
+                      onChange={(e) => setSelectedCollection(e.target.value)}
+                      className="glass-input w-full px-4 py-2 rounded-lg text-white text-sm cursor-pointer"
+                    >
+                      <option value="" className="bg-slate-900">All Products</option>
+                      {collections.map((col) => (
+                        <option key={col.id} value={col.shopify_collection_id} className="bg-slate-900">
+                          {col.title} ({col.products_count} products)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {products.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2">
