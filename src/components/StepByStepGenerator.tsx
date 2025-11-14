@@ -15,6 +15,11 @@ export default function StepByStepGenerator({ token }: StepByStepGeneratorProps)
   const [currentStep, setCurrentStep] = useState<Step>('strategy');
   const [completedSteps, setCompletedSteps] = useState<Step[]>([]);
   
+  // User input
+  const [campaignBrief, setCampaignBrief] = useState('');
+  const [campaignType, setCampaignType] = useState('promotional');
+  const [tone, setTone] = useState('professional');
+  
   // Step data
   const [strategyData, setStrategyData] = useState<any>(null);
   const [copyData, setCopyData] = useState<any>(null);
@@ -108,10 +113,66 @@ export default function StepByStepGenerator({ token }: StepByStepGeneratorProps)
         </div>
       </div>
 
+      {/* Campaign Input */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card"
+      >
+        <h3 className="text-lg font-semibold text-white mb-4">Campaign Details</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-white/80 text-sm mb-2">Campaign Brief</label>
+            <textarea
+              value={campaignBrief}
+              onChange={(e) => setCampaignBrief(e.target.value)}
+              rows={3}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white placeholder-white/20 resize-none"
+              placeholder="e.g., Black Friday snowboard sale - 30% off all boards"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Campaign Type</label>
+              <select
+                value={campaignType}
+                onChange={(e) => setCampaignType(e.target.value)}
+                className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+              >
+                <option value="promotional" className="bg-slate-900">Promotional</option>
+                <option value="product_launch" className="bg-slate-900">Product Launch</option>
+                <option value="newsletter" className="bg-slate-900">Newsletter</option>
+                <option value="seasonal" className="bg-slate-900">Seasonal</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-white/80 text-sm mb-2">Tone</label>
+              <select
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                className="glass-input w-full px-4 py-3 rounded-xl text-white cursor-pointer"
+              >
+                <option value="professional" className="bg-slate-900">Professional</option>
+                <option value="luxury" className="bg-slate-900">Luxury</option>
+                <option value="casual" className="bg-slate-900">Casual</option>
+                <option value="playful" className="bg-slate-900">Playful</option>
+                <option value="urgent" className="bg-slate-900">Urgent</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Step Content */}
       <AnimatePresence mode="wait">
         {currentStep === 'strategy' && (
           <StrategyStep 
+            campaignBrief={campaignBrief}
+            campaignType={campaignType}
+            tone={tone}
             onApprove={(data) => approveStep('strategy', data)}
             onRegenerate={() => regenerateStep('strategy')}
           />
@@ -161,20 +222,26 @@ export default function StepByStepGenerator({ token }: StepByStepGeneratorProps)
 }
 
 // Step 1: Strategy Analysis
-function StrategyStep({ onApprove, onRegenerate }: any) {
+function StrategyStep({ campaignBrief, campaignType, tone, onApprove, onRegenerate }: any) {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
 
+  const canAnalyze = campaignBrief.trim().length > 0;
+
   const handleAnalyze = async () => {
+    if (!canAnalyze) return;
+    
     setAnalyzing(true);
-    // Call AI to analyze campaign brief
+    // Mock analysis for now - will connect to real AI
     setTimeout(() => {
       setAnalysis({
-        campaignType: 'Promotional',
-        keywords: ['snowboard', 'winter', 'sports'],
-        targetAudience: 'Outdoor enthusiasts',
-        urgency: 'medium',
-        suggestedTone: 'energetic'
+        campaignType: campaignType,
+        keywords: campaignBrief.toLowerCase().split(' ').filter(w => w.length > 3).slice(0, 5),
+        targetAudience: campaignType === 'promotional' ? 'Deal seekers' : 'Product enthusiasts',
+        urgency: campaignBrief.toLowerCase().includes('sale') ? 'high' : 'medium',
+        suggestedProducts: 6,
+        suggestedLayout: 'hero-grid',
+        estimatedSections: ['hero', 'product-grid', 'cta', 'footer']
       });
       setAnalyzing(false);
     }, 2000);
@@ -195,11 +262,19 @@ function StrategyStep({ onApprove, onRegenerate }: any) {
         </div>
       </div>
 
+      {!canAnalyze && (
+        <div className="glass rounded-xl p-4 bg-yellow-500/10 border border-yellow-500/30">
+          <p className="text-yellow-200 text-sm">
+            ⚠️ Please enter a campaign brief above to continue
+          </p>
+        </div>
+      )}
+
       {!analysis ? (
         <button
           onClick={handleAnalyze}
-          disabled={analyzing}
-          className="glass-button w-full py-4 rounded-xl text-white font-semibold flex items-center justify-center gap-3"
+          disabled={analyzing || !canAnalyze}
+          className="glass-button w-full py-4 rounded-xl text-white font-semibold flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {analyzing ? (
             <>
@@ -237,6 +312,22 @@ function StrategyStep({ onApprove, onRegenerate }: any) {
               <p className="text-white/50 text-xs mb-1">Target Audience</p>
               <p className="text-white font-medium">{analysis.targetAudience}</p>
             </div>
+            <div className="glass rounded-xl p-4 bg-white/5">
+              <p className="text-white/50 text-xs mb-1">Suggested Products</p>
+              <p className="text-white font-medium">{analysis.suggestedProducts} products</p>
+            </div>
+            <div className="glass rounded-xl p-4 bg-white/5">
+              <p className="text-white/50 text-xs mb-1">Suggested Layout</p>
+              <p className="text-white font-medium capitalize">{analysis.suggestedLayout.replace('-', ' ')}</p>
+            </div>
+          </div>
+          
+          <div className="glass rounded-xl p-4 bg-purple-500/10 border border-purple-500/30">
+            <p className="text-purple-200 text-sm font-medium mb-2">✨ AI Recommendation:</p>
+            <p className="text-white/70 text-sm">
+              Based on your brief, I recommend a <strong>{analysis.urgency}</strong> urgency approach 
+              with <strong>{analysis.suggestedProducts}</strong> products in a <strong>{analysis.suggestedLayout}</strong> layout.
+            </p>
           </div>
 
           <div className="flex gap-3">
