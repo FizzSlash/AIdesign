@@ -30,16 +30,22 @@ router.post('/connect', async (req: AuthRequest, res, next) => {
   }
 });
 
-// GET /api/v1/shopify/products
+// GET /api/v1/shopify/products - Use enhanced service
 router.get('/products', async (req: AuthRequest, res, next) => {
   try {
-    const { collectionId, productType, limit } = req.query;
-    const products = await shopifyService.fetchProducts(req.user!.id, {
-      collectionId: collectionId ? parseInt(collectionId as string) : undefined,
+    const { collectionId, minInventory, inStockOnly, productType, search, limit } = req.query;
+    
+    const products = await shopifyEnhanced.getProducts(req.user!.id, {
+      collectionId: collectionId as string,
+      minInventory: minInventory ? parseInt(minInventory as string) : undefined,
+      inStockOnly: inStockOnly === 'true',
       productType: productType as string,
-      limit: limit ? parseInt(limit as string) : undefined,
+      search: search as string,
     });
-    res.json({ products, count: products.length });
+    
+    // Limit results
+    const limitNum = limit ? parseInt(limit as string) : 50;
+    res.json({ products: products.slice(0, limitNum), count: products.length });
   } catch (error) {
     next(error);
   }
