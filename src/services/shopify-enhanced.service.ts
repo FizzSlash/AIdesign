@@ -183,11 +183,14 @@ export async function getProducts(
   let paramIndex = 2;
   
   if (filters?.collectionId) {
-    // Check if collectionId is numeric
-    const collectionIdNum = parseInt(filters.collectionId);
-    if (!isNaN(collectionIdNum)) {
-      conditions.push(`collections::text ILIKE '%"id":${collectionIdNum}%'`);
-    }
+    // Filter by collection - check if product belongs to this collection
+    conditions.push(`EXISTS (
+      SELECT 1 FROM jsonb_array_elements(collections) AS col
+      WHERE (col->>'id')::text = $${paramIndex}
+        OR (col->>'title')::text = $${paramIndex}
+    )`);
+    params.push(filters.collectionId);
+    paramIndex++;
   }
   
   if (filters?.minInventory) {
