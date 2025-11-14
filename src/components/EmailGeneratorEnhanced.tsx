@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, CheckCircle, XCircle, Wand2, Package, AlertCircle, Code, Settings } from 'lucide-react';
 import axios from 'axios';
 import EmailStrategy from './EmailStrategy';
+import StepByStepGenerator from './StepByStepGenerator';
 
 const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
 
@@ -51,6 +52,9 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
     includeDiscount: false,
     discountCode: ''
   });
+  
+  // Mode toggle
+  const [mode, setMode] = useState<'express' | 'stepByStep'>('stepByStep');
 
   // Load collections on mount
   useEffect(() => {
@@ -174,8 +178,59 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
 
   return (
     <div className="space-y-6">
-      {/* Debug Panel */}
-      {apiError && (
+      {/* Mode Toggle */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-white mb-1">Generation Mode</h3>
+            <p className="text-white/50 text-sm">Choose how you want to create emails</p>
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMode('express')}
+              className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                mode === 'express'
+                  ? 'glass-button'
+                  : 'glass-hover text-white/60 border border-white/10'
+              }`}
+            >
+              ⚡ Express Mode
+            </button>
+            <button
+              onClick={() => setMode('stepByStep')}
+              className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                mode === 'stepByStep'
+                  ? 'glass-button'
+                  : 'glass-hover text-white/60 border border-white/10'
+              }`}
+            >
+              🎯 Step-by-Step
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-4 glass rounded-lg p-3 bg-white/5">
+          <p className="text-white/60 text-xs">
+            {mode === 'express' 
+              ? '⚡ Quick generation - AI handles everything automatically'
+              : '🎯 Control each step - review strategy, copy, images, and layout before generating'
+            }
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Show either Express or Step-by-Step */}
+      {mode === 'stepByStep' ? (
+        <StepByStepGenerator token={token} />
+      ) : (
+        <>
+          {/* Debug Panel */}
+          {apiError && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
@@ -658,6 +713,8 @@ export default function EmailGenerator({ token }: EmailGeneratorProps) {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }
