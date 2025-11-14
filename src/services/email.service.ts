@@ -75,12 +75,10 @@ async function processEmailGenerationJob(jobId: string, userId: string, data: Ge
     ]);
     totalTokens += 1500;
 
-    await updateJobProgress(jobId, 60, 'Selecting images');
-
-    // 4. Select images from brand assets
-    const images = await selectImages(userId, intent);
-
     await updateJobProgress(jobId, 75, 'Assembling email');
+    
+    // Use selected products as images
+    const images = selectedProducts;
 
     // 5. Assemble MJML
     const mjml = await mjmlService.assembleMJML({
