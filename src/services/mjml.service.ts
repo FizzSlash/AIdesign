@@ -96,7 +96,7 @@ export async function assembleMJML(params: AssembleMJMLParams): Promise<string> 
         </mj-text>
         
         <mj-button 
-          href="${heroSection.ctaLink || '#'}"
+          href="${images[0]?.url || images[0]?.product_url || heroSection.ctaLink || '#'}"
           padding="20px"
           border-radius="4px"
           font-size="16px"
@@ -163,13 +163,17 @@ function generateProductGridMJML(products: any[], images: any[], colorPalette: a
       ${pair.map((product: any, index: number) => {
         const imageIndex = pairIndex * 2 + index;
         const image = images[imageIndex];
+        const productUrl = image?.url || images[imageIndex]?.product_url || '#';
+        const comparePrice = image?.compareAtPrice;
+        const price = image?.price || product.price;
         
         return `
       <mj-column width="50%" background-color="#FFFFFF" border-radius="8px">
         ${image ? `
         <mj-image 
-          src="${image.cdn_url}" 
+          src="${image.cdn_url || image.original_url}" 
           alt="${product.name}"
+          href="${productUrl}"
           padding="10px"
           border-radius="8px 8px 0 0"
         />
@@ -194,7 +198,7 @@ function generateProductGridMJML(products: any[], images: any[], colorPalette: a
           ${product.description}
         </mj-text>
         
-        ${product.price ? `
+        ${price ? `
         <mj-text 
           align="center" 
           font-size="18px" 
@@ -202,12 +206,12 @@ function generateProductGridMJML(products: any[], images: any[], colorPalette: a
           padding="10px"
           color="${colorPalette.accent || '#CC0000'}"
         >
-          ${product.price}
+          ${comparePrice ? `<span style="text-decoration: line-through; color: #999; font-size: 14px;">$${comparePrice}</span> ` : ''}$${price}
         </mj-text>
         ` : ''}
         
         <mj-button 
-          href="#"
+          href="${productUrl}"
           background-color="${colorPalette.primary || '#000000'}"
           color="#FFFFFF"
           font-size="14px"
