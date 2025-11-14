@@ -1,5 +1,6 @@
 import mjml2html from 'mjml';
 import { logger } from '../utils/logger.js';
+import { getFooterMJML } from './footer-templates.service.js';
 
 interface AssembleMJMLParams {
   brandProfile: any;
@@ -126,20 +127,14 @@ export async function assembleMJML(params: AssembleMJMLParams): Promise<string> 
     ${generateProductGridMJML(productGrid.products, images.slice(1), colorPalette)}
 
     <!-- Footer -->
-    <mj-section background-color="${colorPalette.primary || '#000000'}" padding="40px 20px">
-      <mj-column>
-        <mj-text align="center" color="#FFFFFF" font-size="12px" line-height="1.8">
-          <a href="#" style="color: #FFFFFF;">Unsubscribe</a> | 
-          <a href="#" style="color: #FFFFFF;">View in Browser</a> | 
-          <a href="#" style="color: #FFFFFF;">Contact Us</a>
-        </mj-text>
-        
-        <mj-text align="center" color="#CCCCCC" font-size="11px" padding-top="20px">
-          © ${new Date().getFullYear()} ${brandProfile.brand_name || 'Company'}. All rights reserved.<br/>
-          You're receiving this email because you subscribed to our newsletter.
-        </mj-text>
-      </mj-column>
-    </mj-section>
+    ${getFooterMJML(
+      brandProfile.footer_template || 'minimal',
+      brandProfile,
+      brandProfile.footer_links || [
+        { text: 'Unsubscribe', url: '{{unsubscribe_link}}' },
+        { text: 'Contact Us', url: 'https://yourstore.com/contact' }
+      ]
+    )}
   </mj-body>
 </mjml>
   `.trim();
