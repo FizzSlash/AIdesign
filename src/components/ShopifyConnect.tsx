@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, CheckCircle, RefreshCw, Package } from 'lucide-react';
+import { ShoppingBag, CheckCircle, RefreshCw, Package, AlertCircle, TrendingUp } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
@@ -25,37 +25,41 @@ export default function ShopifyConnect({ token }: ShopifyConnectProps) {
       );
       setSyncResult(response.data);
     } catch (error: any) {
-      setSyncResult({ error: error.response?.data?.error || 'Sync failed' });
+      setSyncResult({ error: error.response?.data?.error || error.message || 'Sync failed' });
     } finally {
       setSyncing(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      {/* Connection Status */}
-      <div className="glass rounded-2xl p-8">
+    <div className="space-y-6">
+      {/* Connection Status Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card"
+      >
         <div className="flex items-center gap-3 mb-6">
-          <div className="glass rounded-xl p-2">
+          <div className="glass rounded-xl p-3 bg-gradient-to-br from-green-500/20 to-emerald-500/20">
             <ShoppingBag className="w-6 h-6 text-green-300" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white">Shopify Connection</h2>
-            <p className="text-white/60 text-sm">Manage your Shopify integration</p>
+            <p className="text-white/50 text-sm">Manage your product catalog</p>
           </div>
         </div>
 
-        <div className="glass-hover rounded-xl p-6 border border-green-500/30 mb-6">
+        {/* Connection Info */}
+        <div className="glass rounded-xl p-5 border border-green-400/20 bg-green-500/5 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-green-300" />
+              <div className="relative">
+                <CheckCircle className="w-6 h-6 text-green-300" />
+                <div className="absolute inset-0 bg-green-500/20 rounded-full blur-md" />
+              </div>
               <div>
-                <p className="text-white font-medium">Shopify Connected</p>
-                <p className="text-white/60 text-sm">quickstart-dbfb6068.myshopify.com</p>
+                <p className="text-white font-semibold">Store Connected</p>
+                <p className="text-white/50 text-sm font-mono">quickstart-dbfb6068.myshopify.com</p>
               </div>
             </div>
             
@@ -64,7 +68,7 @@ export default function ShopifyConnect({ token }: ShopifyConnectProps) {
               disabled={syncing}
               whileHover={{ scale: syncing ? 1 : 1.05 }}
               whileTap={{ scale: syncing ? 1 : 0.95 }}
-              className="glass-button px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 disabled:opacity-50"
+              className="glass-button px-5 py-3 rounded-xl text-white font-medium flex items-center gap-2 disabled:opacity-50"
             >
               <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Syncing...' : 'Sync Products'}
@@ -72,40 +76,75 @@ export default function ShopifyConnect({ token }: ShopifyConnectProps) {
           </div>
         </div>
 
-        {/* Sync Result */}
-        {syncResult && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`glass rounded-xl p-6 border ${
-              syncResult.error ? 'border-red-500/30' : 'border-green-500/30'
-            }`}
-          >
-            {syncResult.error ? (
-              <p className="text-red-300">Error: {syncResult.error}</p>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-green-300">
-                  <Package className="w-5 h-5" />
-                  <span className="font-medium">Sync Complete!</span>
+        {/* Sync Results */}
+        <AnimatePresence>
+          {syncResult && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`glass rounded-xl p-5 border ${
+                syncResult.error 
+                  ? 'border-red-400/30 bg-red-500/5' 
+                  : 'border-green-400/30 bg-green-500/5'
+              }`}
+            >
+              {syncResult.error ? (
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-300 font-medium mb-1">Sync Failed</p>
+                    <p className="text-white/60 text-sm">{syncResult.error}</p>
+                  </div>
                 </div>
-                <div className="text-white/80 text-sm space-y-1">
-                  <p>Products synced: {syncResult.productsSync || 0}</p>
-                  <p>Collections found: {syncResult.collectionsFound || 0}</p>
-                  <p>Images stored: {syncResult.imagesStored || 0}</p>
+              ) : (
+                <div>
+                  <div className="flex items-center gap-2 text-green-300 mb-4">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">Sync Complete!</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="glass rounded-lg p-4 bg-white/5 text-center">
+                      <TrendingUp className="w-6 h-6 text-purple-300 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-white mb-1">
+                        {syncResult.productsSync || 0}
+                      </p>
+                      <p className="text-white/50 text-xs">Products</p>
+                    </div>
+                    
+                    <div className="glass rounded-lg p-4 bg-white/5 text-center">
+                      <Package className="w-6 h-6 text-blue-300 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-white mb-1">
+                        {syncResult.collectionsFound || 0}
+                      </p>
+                      <p className="text-white/50 text-xs">Collections</p>
+                    </div>
+                    
+                    <div className="glass rounded-lg p-4 bg-white/5 text-center">
+                      <ShoppingBag className="w-6 h-6 text-pink-300 mx-auto mb-2" />
+                      <p className="text-2xl font-bold text-white mb-1">
+                        {syncResult.imagesStored || 0}
+                      </p>
+                      <p className="text-white/50 text-xs">Images</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </motion.div>
-        )}
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="mt-6 glass rounded-xl p-4 border border-white/10">
-          <p className="text-white/60 text-sm">
-            💡 <strong className="text-white">Tip:</strong> Click "Sync Products" to pull all your Shopify products and images. 
-            This makes them available when generating emails.
+        {/* Info Box */}
+        <div className="mt-6 glass rounded-xl p-4 border border-purple-500/20 bg-purple-500/5">
+          <p className="text-white/70 text-sm leading-relaxed">
+            <span className="text-purple-300 font-semibold">💡 Pro Tip:</span> Sync your products regularly to keep your catalog up-to-date. 
+            All product images and data will be available when generating emails.
           </p>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
+
+import { AnimatePresence } from 'framer-motion';
