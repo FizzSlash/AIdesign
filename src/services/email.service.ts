@@ -189,7 +189,17 @@ async function selectImages(userId: string, intent: any) {
     
     // Transform to format expected by MJML
     return result.rows.slice(0, 6).map(product => {
-      const images = JSON.parse(product.images || '[]');
+      // Parse images safely - might be string or already parsed
+      let images = [];
+      try {
+        images = typeof product.images === 'string' 
+          ? JSON.parse(product.images) 
+          : (product.images || []);
+      } catch (e) {
+        logger.error('Failed to parse product images', { productId: product.id, error: e });
+        images = [];
+      }
+      
       return {
         id: product.id,
         cdn_url: images[0]?.src || '',
