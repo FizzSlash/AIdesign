@@ -4,6 +4,9 @@ import {
   CheckCircle, ChevronRight, Sparkles, RefreshCw, Edit2, 
   Target, FileText, Image as ImageIcon, Layout, Eye 
 } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
 
 interface StepByStepGeneratorProps {
   token: string;
@@ -191,6 +194,7 @@ export default function StepByStepGenerator({ token }: StepByStepGeneratorProps)
           <ImagesStep 
             strategyData={strategyData}
             copyData={copyData}
+            token={token}
             onApprove={(data) => approveStep('images', data)}
             onRegenerate={() => regenerateStep('images')}
             onBack={() => setCurrentStep('copy')}
@@ -638,21 +642,39 @@ function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
   );
 }
 
-// Step 3: Image Selection
-function ImagesStep({ copyData, onApprove, onBack }: any) {
+// Step 3: Image Selection  
+function ImagesStep({ copyData, onApprove, onBack, token }: any) {
   const [heroType, setHeroType] = useState<'product' | 'lifestyle' | 'ai'>('ai');
   const [aiHeroStyle, setAiHeroStyle] = useState<'dalle' | 'gradient'>('dalle');
   const [generating, setGenerating] = useState(false);
   const [generatedHero, setGeneratedHero] = useState('');
   const [heroPrompt, setHeroPrompt] = useState('');
+  const [error, setError] = useState('');
 
   const handleGenerateHero = async () => {
     setGenerating(true);
-    // Mock generation - will connect to API
-    setTimeout(() => {
-      setGeneratedHero('https://via.placeholder.com/1792x1024/6366f1/ffffff?text=AI+Generated+Hero');
+    setError('');
+    
+    try {
+      const response = await axios.post(
+        `${API_URL}/images/generate-hero`,
+        {
+          type: aiHeroStyle,
+          text: 'BLACK FRIDAY SALE',
+          campaignBrief: copyData?.selectedHeadline || 'Product sale',
+          brandVoice: 'professional'
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setGeneratedHero(response.data.imageUrl);
+      console.log('Generated hero:', response.data);
+    } catch (err: any) {
+      console.error('Hero generation failed:', err);
+      setError(err.response?.data?.error || 'Failed to generate image');
+    } finally {
       setGenerating(false);
-    }, 3000);
+    }
   };
 
   return (
@@ -796,11 +818,35 @@ function ImagesStep({ copyData, onApprove, onBack }: any) {
               )}
             </button>
 
+            {error && (
+              <div className="glass rounded-lg p-3 bg-red-500/20 border border-red-400/30">
+                <p className="text-red-200 text-sm">{error}</p>
+              </div>
+            )}
+
             {generatedHero && (
               <div className="glass rounded-lg overflow-hidden">
-                <img src={generatedHero} alt="Generated hero" className="w-full" />
+                <img 
+                  src={generatedHero} 
+                  alt="Generated hero" 
+                  className="w-full h-auto"
+                  onError={(e) => {
+                    console.error('Image failed to load:', generatedHero);
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1792x1024/1e293b/ffffff?text=Image+Loading...';
+                  }}
+                />
                 <div className="p-3 bg-black/20">
-                  <p className="text-white/70 text-xs">Generated with {aiHeroStyle === 'dalle' ? 'DALL-E 3' : 'Gradient'}</p>
+                  <p className="text-white/70 text-xs">
+                    Generated with {aiHeroStyle === 'dalle' ? 'DALL-E 3' : 'Gradient'} ✨
+                  </p>
+                  <a 
+                    href={generatedHero} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-purple-300 text-xs hover:text-purple-200"
+                  >
+                    Open in new tab →
+                  </a>
                 </div>
               </div>
             )}
