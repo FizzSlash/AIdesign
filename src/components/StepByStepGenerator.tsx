@@ -354,6 +354,39 @@ function StrategyStep({ campaignBrief, campaignType, tone, onApprove, onRegenera
 
 // Step 2: Copy Review
 function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
+  const [generating, setGenerating] = useState(false);
+  const [copy, setCopy] = useState<any>(null);
+  const [editingHeadline, setEditingHeadline] = useState(false);
+  const [selectedHeadline, setSelectedHeadline] = useState(0);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    // Mock AI generation - will connect to real API
+    setTimeout(() => {
+      setCopy({
+        headlineOptions: [
+          "Gear Up for Winter - Premium Snowboards on Sale",
+          "Hit the Slopes in Style - Save Big on Boards",
+          "Your Best Season Starts Here - Limited Time Offer"
+        ],
+        subheadline: "Discover our premium collection of snowboards - perfect for every skill level",
+        heroCtaText: "Shop Snowboards",
+        productDescriptions: [
+          "Experience unmatched control with this versatile all-mountain board",
+          "Engineered for speed and precision on any terrain",
+          "Perfect blend of flexibility and power for advanced riders"
+        ]
+      });
+      setGenerating(false);
+    }, 3000);
+  };
+
+  const updateHeadline = (index: number, value: string) => {
+    const newOptions = [...copy.headlineOptions];
+    newOptions[index] = value;
+    setCopy({ ...copy, headlineOptions: newOptions });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -363,17 +396,154 @@ function CopyStep({ strategyData, onApprove, onRegenerate, onBack }: any) {
     >
       <div className="flex items-center gap-3 mb-6">
         <FileText className="w-6 h-6 text-blue-300" />
-        <h3 className="text-xl font-bold text-white">Step 2: Review Copy</h3>
+        <div>
+          <h3 className="text-xl font-bold text-white">Step 2: Review & Edit Copy</h3>
+          <p className="text-white/50 text-sm">AI writes headlines and descriptions</p>
+        </div>
       </div>
-      
-      <p className="text-white/50 text-sm mb-4">Copy step coming soon...</p>
-      
-      <div className="flex gap-3">
-        <button onClick={onBack} className="glass-hover px-6 py-3 rounded-xl">Back</button>
-        <button onClick={() => onApprove({})} className="glass-button flex-1 py-3 rounded-xl">
-          Approve & Continue
+
+      {!copy ? (
+        <button
+          onClick={handleGenerate}
+          disabled={generating}
+          className="glass-button w-full py-4 rounded-xl text-white font-semibold flex items-center justify-center gap-3"
+        >
+          {generating ? (
+            <>
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                <Sparkles className="w-5 h-5" />
+              </motion.div>
+              Generating Copy...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-5 h-5" />
+              Generate Email Copy
+            </>
+          )}
         </button>
-      </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Headline Options */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-white/80 text-sm font-medium">
+                Choose Headline (or edit)
+              </label>
+              <button
+                onClick={onRegenerate}
+                className="text-purple-300 text-xs hover:text-purple-200 flex items-center gap-1"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Regenerate All
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {copy.headlineOptions.map((headline: string, index: number) => (
+                <div
+                  key={index}
+                  className={`glass rounded-xl p-4 cursor-pointer transition-all ${
+                    selectedHeadline === index
+                      ? 'border-2 border-purple-400/60 bg-purple-500/20'
+                      : 'border border-white/10 hover:border-white/20'
+                  }`}
+                  onClick={() => setSelectedHeadline(index)}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        selectedHeadline === index ? 'border-purple-400 bg-purple-500' : 'border-white/20'
+                      }`}>
+                        {selectedHeadline === index && (
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        )}
+                      </div>
+                      {editingHeadline && selectedHeadline === index ? (
+                        <input
+                          type="text"
+                          value={headline}
+                          onChange={(e) => updateHeadline(index, e.target.value)}
+                          onBlur={() => setEditingHeadline(false)}
+                          className="flex-1 bg-transparent text-white outline-none"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="text-white font-medium flex-1">{headline}</span>
+                      )}
+                    </div>
+                    {selectedHeadline === index && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingHeadline(true);
+                        }}
+                        className="text-purple-300 hover:text-purple-200"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Subheadline */}
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">Subheadline</label>
+            <input
+              type="text"
+              value={copy.subheadline}
+              onChange={(e) => setCopy({ ...copy, subheadline: e.target.value })}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white"
+            />
+          </div>
+
+          {/* Hero CTA */}
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">Main CTA Text</label>
+            <input
+              type="text"
+              value={copy.heroCtaText}
+              onChange={(e) => setCopy({ ...copy, heroCtaText: e.target.value })}
+              className="glass-input w-full px-4 py-3 rounded-xl text-white"
+            />
+          </div>
+
+          {/* Preview */}
+          <div className="glass rounded-xl p-6 bg-white/5">
+            <p className="text-purple-200 text-sm font-medium mb-3">Preview:</p>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-white">{copy.headlineOptions[selectedHeadline]}</h2>
+              <p className="text-white/70">{copy.subheadline}</p>
+              <button className="glass-button px-6 py-3 rounded-lg text-white font-semibold mt-3">
+                {copy.heroCtaText}
+              </button>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button 
+              onClick={onBack}
+              className="glass-hover px-6 py-3 rounded-xl text-white/80 border border-white/20"
+            >
+              Back
+            </button>
+            <button 
+              onClick={() => onApprove({
+                ...copy,
+                selectedHeadline: copy.headlineOptions[selectedHeadline]
+              })} 
+              className="glass-button flex-1 py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Approve & Continue
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
