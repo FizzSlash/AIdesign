@@ -210,5 +210,5 @@ export function selectHeroImage(
   }
 }
 
-export { EmailStrategy };
+export type { EmailStrategy };
 

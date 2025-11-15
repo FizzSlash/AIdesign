@@ -43,11 +43,15 @@ export async function generateDALLEHero(request: HeroImageRequest): Promise<stri
       n: 1
     });
 
-    const imageUrl = response.data[0].url;
+    const imageUrl = response.data[0]?.url;
+    
+    if (!imageUrl) {
+      throw new Error('No image URL returned from DALL-E');
+    }
     
     logger.info('DALL-E hero generated', { imageUrl });
     
-    return imageUrl || '';
+    return imageUrl;
   } catch (error) {
     logger.error('DALL-E generation failed', { error });
     throw new Error('Failed to generate AI hero image');
