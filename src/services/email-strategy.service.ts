@@ -210,5 +210,5 @@ export function selectHeroImage(
   }
 }
 
-export type { EmailStrategy };
+// EmailStrategy already exported as interface above
 

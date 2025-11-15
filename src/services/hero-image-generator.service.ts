@@ -43,10 +43,14 @@ export async function generateDALLEHero(request: HeroImageRequest): Promise<stri
       n: 1
     });
 
-    const imageUrl = response.data[0]?.url;
+    if (!response.data || !response.data[0]) {
+      throw new Error('No image data returned from DALL-E');
+    }
+    
+    const imageUrl = response.data[0].url;
     
     if (!imageUrl) {
-      throw new Error('No image URL returned from DALL-E');
+      throw new Error('No image URL in response');
     }
     
     logger.info('DALL-E hero generated', { imageUrl });
