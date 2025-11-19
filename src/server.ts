@@ -10,6 +10,7 @@ import { apiLimiter } from './middleware/rateLimiter.js';
 import authRoutes from './routes/auth.routes.js';
 import klaviyoRoutes from './routes/klaviyo.routes.js';
 import brandRoutes from './routes/brand.routes.js';
+import brandEnhancedRoutes from './routes/brand-enhanced.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import productsRoutes from './routes/products.routes.js';
@@ -76,6 +77,7 @@ app.get('/api/test', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/klaviyo', klaviyoRoutes);
 app.use('/api/v1/brand', brandRoutes);
+app.use('/api/v1/brand', brandEnhancedRoutes); // Enhanced brand profile routes
 app.use('/api/v1/emails', emailRoutes);
 app.use('/api/v1/templates', templateRoutes);
 app.use('/api/v1/products', productsRoutes);

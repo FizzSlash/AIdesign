@@ -324,6 +324,45 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 }
 
 /**
+ * Generic text generation function
+ */
+export async function generateText(options: {
+  prompt: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}): Promise<string> {
+  const {
+    prompt,
+    model = 'gpt-4-turbo',
+    temperature = 0.7,
+    maxTokens = 1000
+  } = options;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature,
+      max_tokens: maxTokens,
+    });
+
+    const content = completion.choices[0]?.message?.content || '';
+    
+    logger.info('AI text generated', {
+      model,
+      tokensUsed: completion.usage?.total_tokens,
+      cost: calculateCost(model, completion.usage?.total_tokens || 0),
+    });
+
+    return content;
+  } catch (error: any) {
+    logger.error('AI text generation failed', { error: error.message });
+    throw new Error(`AI generation failed: ${error.message}`);
+  }
+}
+
+/**
  * Track token usage and cost
  */
 export function calculateCost(model: string, tokensUsed: number): number {
