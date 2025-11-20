@@ -5,6 +5,7 @@ import {
   Globe, Loader, RefreshCw, Sliders, Eye, Settings 
 } from 'lucide-react';
 import axios from 'axios';
+import BrandAuditDisplay from './BrandAuditDisplay';
 
 const API_URL = 'https://aidesign-production.up.railway.app/api/v1';
 
@@ -394,47 +395,8 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
               </div>
             </div>
 
-            {brandProfile && (
-              <div className="mt-8 space-y-4">
-                <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  Analysis Complete
-                </h4>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="glass rounded-xl p-4">
-                    <p className="text-white/60 text-sm mb-1">Brand Name</p>
-                    <p className="text-white font-medium">{brandProfile.brand_name}</p>
-                  </div>
-
-                  {brandProfile.brand_personality && (
-                    <>
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-white/60 text-sm mb-1">Tone</p>
-                        <p className="text-white font-medium capitalize">{brandProfile.brand_personality.tone}</p>
-                      </div>
-
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-white/60 text-sm mb-1">Formality Level</p>
-                        <p className="text-white font-medium">{brandProfile.brand_personality.formality_level}/5</p>
-                      </div>
-
-                      <div className="glass rounded-xl p-4">
-                        <p className="text-white/60 text-sm mb-1">Adjectives</p>
-                        <p className="text-white font-medium">{brandProfile.brand_personality.adjectives.join(', ')}</p>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {brandProfile.brand_personality?.voice_description && (
-                  <div className="glass rounded-xl p-4">
-                    <p className="text-white/60 text-sm mb-2">Brand Voice</p>
-                    <p className="text-white">{brandProfile.brand_personality.voice_description}</p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Show comprehensive brand audit if available */}
+            {brandProfile && <BrandAuditDisplay audit={brandProfile} />}
           </div>
         )}
 
