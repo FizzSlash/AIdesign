@@ -171,18 +171,25 @@ export class EnhancedBrandService {
       const messaging = await this.analyzeMessagingStyle(pages);
 
       // 6. Save enhanced profile
-      await this.saveEnhancedProfile(brandProfileId, {
-        brand_name: await this.extractBrandName(pages),
-        logo_urls: visualAssets.logo_urls,
-        color_palette: visualAssets.color_palette,
-        typography: visualAssets.typography,
-        brand_personality: personality,
-        visual_style: visualStyle,
-        messaging_preferences: messaging,
-        brand_keywords: personality.adjectives,
-        example_emails: options?.exampleEmails || [],
-        competitor_urls: options?.competitorUrls || []
-      });
+      console.log('[Brand Analysis] Saving to database...');
+      try {
+        await this.saveEnhancedProfile(brandProfileId, {
+          brand_name: await this.extractBrandName(pages),
+          logo_urls: visualAssets.logo_urls,
+          color_palette: visualAssets.color_palette,
+          typography: visualAssets.typography,
+          brand_personality: personality,
+          visual_style: visualStyle,
+          messaging_preferences: messaging,
+          brand_keywords: personality.adjectives,
+          example_emails: options?.exampleEmails || [],
+          competitor_urls: options?.competitorUrls || []
+        });
+        console.log('[Brand Analysis] Data saved successfully!');
+      } catch (saveError) {
+        console.error('[Brand Analysis] SAVE ERROR:', saveError);
+        throw saveError;
+      }
 
       console.log('[Brand Analysis] Complete!');
 
@@ -508,7 +515,15 @@ Return ONLY valid JSON (no markdown):
    * Save enhanced profile to database
    */
   private async saveEnhancedProfile(brandProfileId: string, data: any) {
-    await this.db.query(
+    console.log('[Save] Preparing to save brand profile:', brandProfileId);
+    console.log('[Save] Data to save:', {
+      brand_name: data.brand_name,
+      has_personality: !!data.brand_personality,
+      has_visual_style: !!data.visual_style,
+      has_messaging: !!data.messaging_preferences
+    });
+
+    const result = await this.db.query(
       `UPDATE brand_profiles 
        SET 
          brand_name = $1,
@@ -524,7 +539,8 @@ Return ONLY valid JSON (no markdown):
          analysis_status = 'completed',
          analysis_completed_at = NOW(),
          updated_at = NOW()
-       WHERE id = $11`,
+       WHERE id = $11
+       RETURNING *`,
       [
         data.brand_name,
         JSON.stringify(data.logo_urls),
@@ -539,6 +555,12 @@ Return ONLY valid JSON (no markdown):
         brandProfileId
       ]
     );
+
+    console.log('[Save] Rows updated:', result.rowCount);
+    if (result.rowCount === 0) {
+      throw new Error('No brand profile found with id: ' + brandProfileId);
+    }
+    console.log('[Save] Successfully saved brand profile!');
   }
 
   /**
