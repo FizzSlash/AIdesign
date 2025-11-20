@@ -601,7 +601,7 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="glass rounded-xl p-4">
                 <label className="block text-white/60 text-sm mb-2">Layout Preference</label>
-                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white bg-[#1e1b4b]">
                   <option value="minimal" selected={brandProfile?.visual_style?.layout_preference === 'minimal'}>Minimal</option>
                   <option value="rich" selected={brandProfile?.visual_style?.layout_preference === 'rich'}>Rich</option>
                   <option value="editorial" selected={brandProfile?.visual_style?.layout_preference === 'editorial'}>Editorial</option>
@@ -611,7 +611,7 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
 
               <div className="glass rounded-xl p-4">
                 <label className="block text-white/60 text-sm mb-2">Image Style</label>
-                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white bg-[#1e1b4b]">
                   <option value="lifestyle" selected={brandProfile?.visual_style?.image_style === 'lifestyle'}>Lifestyle</option>
                   <option value="product-only" selected={brandProfile?.visual_style?.image_style === 'product-only'}>Product Only</option>
                   <option value="mixed" selected={brandProfile?.visual_style?.image_style === 'mixed'}>Mixed</option>
@@ -620,7 +620,7 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
 
               <div className="glass rounded-xl p-4">
                 <label className="block text-white/60 text-sm mb-2">Text Overlay Style</label>
-                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white bg-[#1e1b4b]">
                   <option value="dark" selected={brandProfile?.visual_style?.overlay_style === 'dark'}>Dark</option>
                   <option value="light" selected={brandProfile?.visual_style?.overlay_style === 'light'}>Light</option>
                   <option value="gradient" selected={brandProfile?.visual_style?.overlay_style === 'gradient'}>Gradient</option>
@@ -630,7 +630,7 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
 
               <div className="glass rounded-xl p-4">
                 <label className="block text-white/60 text-sm mb-2">Spacing</label>
-                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white bg-[#1e1b4b]">
                   <option value="tight" selected={brandProfile?.visual_style?.spacing === 'tight'}>Tight</option>
                   <option value="normal" selected={brandProfile?.visual_style?.spacing === 'normal'}>Normal</option>
                   <option value="spacious" selected={brandProfile?.visual_style?.spacing === 'spacious'}>Spacious</option>
@@ -671,7 +671,7 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
             <div className="space-y-4">
               <div className="glass rounded-xl p-4">
                 <label className="block text-white/60 text-sm mb-2">CTA Style</label>
-                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white bg-[#1e1b4b]">
                   <option value="action" selected={brandProfile?.messaging_preferences?.cta_style === 'action'}>Action-Oriented (Shop Now, Buy Now)</option>
                   <option value="benefit" selected={brandProfile?.messaging_preferences?.cta_style === 'benefit'}>Benefit-Focused (Discover More, Explore)</option>
                   <option value="urgency" selected={brandProfile?.messaging_preferences?.cta_style === 'urgency'}>Urgency-Driven (Limited Time, Hurry)</option>
