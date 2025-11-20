@@ -277,23 +277,102 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
         {activeTab === 'analyze' && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-4">Analyze Your Website</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Brand Basics</h3>
               <p className="text-white/60 mb-6">
-                Enter your website URL and we'll analyze your brand personality, visual style, and messaging preferences using AI.
+                Set your brand information manually, or analyze your website to auto-fill with AI
               </p>
+            </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white/80 mb-2">Website URL</label>
-                  <input
-                    type="url"
-                    value={websiteUrl}
-                    onChange={(e) => setWebsiteUrl(e.target.value)}
-                    placeholder="https://yourstore.com"
-                    className="w-full glass-input"
-                    disabled={analyzing}
-                  />
+            {/* Manual Brand Info */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-white/80 mb-2">Brand Name</label>
+                <input
+                  type="text"
+                  value={brandProfile?.brand_name || ''}
+                  placeholder="Your Brand Name"
+                  className="w-full glass-input px-4 py-3 rounded-lg text-white"
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/80 mb-2">Brand Colors</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-white/60 text-xs mb-2">Primary</p>
+                    <div className="flex gap-2">
+                      <input 
+                        type="color" 
+                        value={brandProfile?.color_palette?.primary || '#000000'}
+                        className="w-12 h-12 rounded-lg cursor-pointer"
+                        readOnly
+                      />
+                      <input 
+                        type="text"
+                        value={brandProfile?.color_palette?.primary || '#000000'}
+                        className="flex-1 glass-input px-3 py-2 rounded-lg text-white text-sm"
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-white/60 text-xs mb-2">Secondary</p>
+                    <div className="flex gap-2">
+                      <input 
+                        type="color" 
+                        value={brandProfile?.color_palette?.secondary || '#666666'}
+                        className="w-12 h-12 rounded-lg cursor-pointer"
+                        readOnly
+                      />
+                      <input 
+                        type="text"
+                        value={brandProfile?.color_palette?.secondary || '#666666'}
+                        className="flex-1 glass-input px-3 py-2 rounded-lg text-white text-sm"
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-white/60 text-xs mb-2">Accent</p>
+                    <div className="flex gap-2">
+                      <input 
+                        type="color" 
+                        value={brandProfile?.color_palette?.accent || '#0066cc'}
+                        className="w-12 h-12 rounded-lg cursor-pointer"
+                        readOnly
+                      />
+                      <input 
+                        type="text"
+                        value={brandProfile?.color_palette?.accent || '#0066cc'}
+                        className="flex-1 glass-input px-3 py-2 rounded-lg text-white text-sm"
+                        readOnly
+                      />
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Website Analysis */}
+            <div className="glass rounded-xl p-4 mt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-purple-300" />
+                <p className="text-white/80 font-medium">AI Auto-Fill</p>
+              </div>
+              <p className="text-white/60 text-sm mb-4">
+                Analyze your website to automatically detect brand colors, personality, and messaging style
+              </p>
+              
+              <div className="space-y-3">
+                <input
+                  type="url"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="https://yourstore.com"
+                  className="w-full glass-input px-4 py-3 rounded-lg text-white"
+                  disabled={analyzing}
+                />
 
                 <button
                   onClick={startAnalysis}
@@ -308,7 +387,7 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Analyze Website
+                      Analyze Website with AI
                     </>
                   )}
                 </button>
@@ -515,41 +594,67 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
               <h3 className="text-xl font-bold text-white mb-2">Visual Style</h3>
               <p className="text-white/60 mb-6">
                 Customize the visual appearance of your emails
+                {brandProfile?.visual_style && <span className="text-purple-300"> (AI-suggested)</span>}
               </p>
             </div>
 
-            {brandProfile?.visual_style && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="glass rounded-xl p-4">
-                  <p className="text-white/60 text-sm mb-1">Layout Preference</p>
-                  <p className="text-white font-medium capitalize">{brandProfile.visual_style.layout_preference}</p>
-                </div>
-
-                <div className="glass rounded-xl p-4">
-                  <p className="text-white/60 text-sm mb-1">Image Style</p>
-                  <p className="text-white font-medium capitalize">{brandProfile.visual_style.image_style}</p>
-                </div>
-
-                <div className="glass rounded-xl p-4">
-                  <p className="text-white/60 text-sm mb-1">Overlay Style</p>
-                  <p className="text-white font-medium capitalize">{brandProfile.visual_style.overlay_style}</p>
-                </div>
-
-                <div className="glass rounded-xl p-4">
-                  <p className="text-white/60 text-sm mb-1">Spacing</p>
-                  <p className="text-white font-medium capitalize">{brandProfile.visual_style.spacing}</p>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="glass rounded-xl p-4">
+                <label className="block text-white/60 text-sm mb-2">Layout Preference</label>
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                  <option value="minimal" selected={brandProfile?.visual_style?.layout_preference === 'minimal'}>Minimal</option>
+                  <option value="rich" selected={brandProfile?.visual_style?.layout_preference === 'rich'}>Rich</option>
+                  <option value="editorial" selected={brandProfile?.visual_style?.layout_preference === 'editorial'}>Editorial</option>
+                  <option value="product-focused" selected={brandProfile?.visual_style?.layout_preference === 'product-focused'}>Product-Focused</option>
+                </select>
               </div>
-            )}
 
-            {!brandProfile?.visual_style && (
-              <div className="glass rounded-xl p-6 text-center">
-                <Globe className="w-12 h-12 text-white/40 mx-auto mb-3" />
-                <p className="text-white/60">
-                  Analyze your website first to get visual style recommendations
-                </p>
+              <div className="glass rounded-xl p-4">
+                <label className="block text-white/60 text-sm mb-2">Image Style</label>
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                  <option value="lifestyle" selected={brandProfile?.visual_style?.image_style === 'lifestyle'}>Lifestyle</option>
+                  <option value="product-only" selected={brandProfile?.visual_style?.image_style === 'product-only'}>Product Only</option>
+                  <option value="mixed" selected={brandProfile?.visual_style?.image_style === 'mixed'}>Mixed</option>
+                </select>
               </div>
-            )}
+
+              <div className="glass rounded-xl p-4">
+                <label className="block text-white/60 text-sm mb-2">Text Overlay Style</label>
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                  <option value="dark" selected={brandProfile?.visual_style?.overlay_style === 'dark'}>Dark</option>
+                  <option value="light" selected={brandProfile?.visual_style?.overlay_style === 'light'}>Light</option>
+                  <option value="gradient" selected={brandProfile?.visual_style?.overlay_style === 'gradient'}>Gradient</option>
+                  <option value="none" selected={brandProfile?.visual_style?.overlay_style === 'none'}>None</option>
+                </select>
+              </div>
+
+              <div className="glass rounded-xl p-4">
+                <label className="block text-white/60 text-sm mb-2">Spacing</label>
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                  <option value="tight" selected={brandProfile?.visual_style?.spacing === 'tight'}>Tight</option>
+                  <option value="normal" selected={brandProfile?.visual_style?.spacing === 'normal'}>Normal</option>
+                  <option value="spacious" selected={brandProfile?.visual_style?.spacing === 'spacious'}>Spacious</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              onClick={saveSettings}
+              disabled={saving}
+              className="btn-primary w-full flex items-center justify-center gap-2 mt-6"
+            >
+              {saving ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Save Visual Settings
+                </>
+              )}
+            </button>
           </div>
         )}
 
@@ -559,39 +664,51 @@ export default function BrandSetupEnhanced({ token }: BrandSetupEnhancedProps) {
               <h3 className="text-xl font-bold text-white mb-2">Messaging Preferences</h3>
               <p className="text-white/60 mb-6">
                 How your brand communicates with customers
+                {brandProfile?.messaging_preferences && <span className="text-purple-300"> (AI-suggested)</span>}
               </p>
             </div>
 
-            {brandProfile?.messaging_preferences && (
-              <div className="space-y-4">
+            <div className="space-y-4">
+              <div className="glass rounded-xl p-4">
+                <label className="block text-white/60 text-sm mb-2">CTA Style</label>
+                <select className="w-full glass-input px-3 py-2 rounded-lg text-white">
+                  <option value="action" selected={brandProfile?.messaging_preferences?.cta_style === 'action'}>Action-Oriented (Shop Now, Buy Now)</option>
+                  <option value="benefit" selected={brandProfile?.messaging_preferences?.cta_style === 'benefit'}>Benefit-Focused (Discover More, Explore)</option>
+                  <option value="urgency" selected={brandProfile?.messaging_preferences?.cta_style === 'urgency'}>Urgency-Driven (Limited Time, Hurry)</option>
+                </select>
+              </div>
+
+              {brandProfile?.messaging_preferences?.common_ctas && (
                 <div className="glass rounded-xl p-4">
-                  <p className="text-white/60 text-sm mb-1">CTA Style</p>
-                  <p className="text-white font-medium capitalize">{brandProfile.messaging_preferences.cta_style}</p>
-                </div>
-
-                {brandProfile.messaging_preferences.common_ctas && (
-                  <div className="glass rounded-xl p-4">
-                    <p className="text-white/60 text-sm mb-2">Common CTAs</p>
-                    <div className="flex flex-wrap gap-2">
-                      {brandProfile.messaging_preferences.common_ctas.map((cta, i) => (
-                        <span key={i} className="glass rounded-lg px-3 py-1 text-sm text-white">
-                          {cta}
-                        </span>
-                      ))}
-                    </div>
+                  <p className="text-white/60 text-sm mb-2">AI-Detected Common CTAs</p>
+                  <div className="flex flex-wrap gap-2">
+                    {brandProfile.messaging_preferences.common_ctas.map((cta, i) => (
+                      <span key={i} className="glass rounded-lg px-3 py-1 text-sm text-white">
+                        {cta}
+                      </span>
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
-            {!brandProfile?.messaging_preferences && (
-              <div className="glass rounded-xl p-6 text-center">
-                <Globe className="w-12 h-12 text-white/40 mx-auto mb-3" />
-                <p className="text-white/60">
-                  Analyze your website first to get messaging recommendations
-                </p>
-              </div>
-            )}
+            <button
+              onClick={saveSettings}
+              disabled={saving}
+              className="btn-primary w-full flex items-center justify-center gap-2 mt-6"
+            >
+              {saving ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Save Messaging Settings
+                </>
+              )}
+            </button>
           </div>
         )}
       </motion.div>
