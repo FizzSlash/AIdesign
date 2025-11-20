@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Mail, Palette, ShoppingBag, LogOut, Zap } from 'lucide-react';
 import EmailGenerator from './EmailGeneratorEnhanced';
-import BrandSetup from './BrandSetup';
+import BrandSetupEnhanced from './BrandSetupEnhanced';
 import ShopifyConnect from './ShopifyConnect';
 
 interface DashboardProps {
@@ -128,7 +128,7 @@ export default function Dashboard({ token }: DashboardProps) {
             transition={{ duration: 0.3 }}
           >
             {currentView === 'generate' && <EmailGenerator token={token} />}
-            {currentView === 'brand' && <BrandSetup token={token} />}
+            {currentView === 'brand' && <BrandSetupEnhanced token={token} />}
             {currentView === 'shopify' && <ShopifyConnect token={token} />}
           </motion.div>
         </AnimatePresence>
