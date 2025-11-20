@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import * as aiService from './ai.service.js';
+import { DeepBrandAuditService } from './brand-audit-deep.service.js';
 import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
 
@@ -89,9 +90,11 @@ interface ScrapedPage {
 
 export class EnhancedBrandService {
   private db: Pool;
+  private deepAudit: DeepBrandAuditService;
 
   constructor(db: Pool) {
     this.db = db;
+    this.deepAudit = new DeepBrandAuditService(db);
   }
 
   /**
@@ -167,11 +170,31 @@ export class EnhancedBrandService {
       const visualStyle = await this.analyzeVisualStyle(pages, visualAssets);
 
       // 5. Analyze messaging patterns
-      console.log('[Brand Analysis] Step 5/5: Analyzing messaging style...');
+      console.log('[Brand Analysis] Step 5/7: Analyzing messaging style...');
       const messaging = await this.analyzeMessagingStyle(pages);
 
-      // 6. Save enhanced profile
-      console.log('[Brand Analysis] Saving to database...');
+      // 6. DEEP AUDIT - Comprehensive analysis
+      console.log('[Brand Analysis] Step 6/7: Performing deep brand audit...');
+      const websiteText = pages.map(p => p.text).join('\n\n');
+      const allHeadlines = pages.flatMap(p => p.headlines);
+      const allCTAs = pages.flatMap(p => p.ctas);
+      
+      // Extract product descriptions from pages
+      const productDescriptions = this.extractProductDescriptions(pages);
+      const aboutContent = pages.find(p => p.url.includes('/about'))?.text || '';
+      const imageList = pages.flatMap(p => p.images).slice(0, 15);
+      
+      const deepAudit = await this.deepAudit.performDeepAudit(
+        websiteText,
+        allHeadlines,
+        allCTAs,
+        productDescriptions,
+        aboutContent,
+        imageList.map(img => ({ url: img.src, alt: img.alt }))
+      );
+
+      // 7. Save enhanced profile with deep audit
+      console.log('[Brand Analysis] Step 7/7: Saving comprehensive audit to database...');
       try {
         await this.saveEnhancedProfile(brandProfileId, {
           brand_name: await this.extractBrandName(pages),
@@ -183,7 +206,12 @@ export class EnhancedBrandService {
           messaging_preferences: messaging,
           brand_keywords: personality.adjectives,
           example_emails: options?.exampleEmails || [],
-          competitor_urls: options?.competitorUrls || []
+          competitor_urls: options?.competitorUrls || [],
+          // Deep audit data
+          brand_identity: deepAudit.brandIdentity,
+          visual_dna: deepAudit.visualDNA,
+          copy_audit: deepAudit.copyAudit,
+          email_playbook: deepAudit.emailPlaybook
         });
         console.log('[Brand Analysis] Data saved successfully!');
       } catch (saveError) {
@@ -410,6 +438,27 @@ export class EnhancedBrandService {
   }
 
   /**
+   * Extract product descriptions from pages
+   */
+  private extractProductDescriptions(pages: ScrapedPage[]): string[] {
+    const descriptions: string[] = [];
+    
+    pages.forEach(page => {
+      const $ = cheerio.load(page.html);
+      
+      // Look for product descriptions in common selectors
+      $('.product-description, .product-details, [class*="description"]').each((i, el) => {
+        const text = $(el).text().trim();
+        if (text.length > 50 && text.length < 500) {
+          descriptions.push(text);
+        }
+      });
+    });
+    
+    return descriptions.slice(0, 10); // Return up to 10 descriptions
+  }
+
+  /**
    * Analyze brand personality with AI
    */
   private async analyzeBrandPersonality(pages: ScrapedPage[]) {
@@ -536,10 +585,16 @@ Return ONLY valid JSON (no markdown):
          brand_keywords = $8,
          example_emails = $9,
          competitor_urls = $10,
+         brand_identity = $11,
+         visual_dna = $12,
+         copy_audit = $13,
+         email_playbook = $14,
+         audit_version = 'v2',
+         last_audit_at = NOW(),
          analysis_status = 'completed',
          analysis_completed_at = NOW(),
          updated_at = NOW()
-       WHERE id = $11
+       WHERE id = $15
        RETURNING *`,
       [
         data.brand_name,
@@ -552,6 +607,10 @@ Return ONLY valid JSON (no markdown):
         data.brand_keywords,
         JSON.stringify(data.example_emails),
         data.competitor_urls,
+        JSON.stringify(data.brand_identity || {}),
+        JSON.stringify(data.visual_dna || {}),
+        JSON.stringify(data.copy_audit || {}),
+        JSON.stringify(data.email_playbook || {}),
         brandProfileId
       ]
     );
